@@ -65,7 +65,7 @@
         .day-col { 
             display: flex; flex-direction: column; align-items: center; gap: 8px; 
             cursor: pointer; padding: 6px 2px; border-radius: 12px; transition: background-color 0.2s;
-            border: 2px solid transparent; /* 기본 투명 테두리 */
+            border: 2px solid transparent;
         }
         .day-col.selected { border-color: var(--primary-color); background-color: rgba(52, 199, 89, 0.05); }
         .day-name { font-size: 12px; color: var(--text-sub); font-weight: 500;}
@@ -79,6 +79,16 @@
         .mini-icon { font-size: 12px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
         .mini-icon.inactive { opacity: 0.15; filter: grayscale(100%); }
         .mini-icon.active { opacity: 1; }
+
+        /* 메모 텍스트 입력창 */
+        .memo-input {
+            width: 100%; box-sizing: border-box; background-color: var(--gray-light);
+            border: none; border-radius: 12px; padding: 14px; font-size: 14px;
+            color: var(--text-main); font-family: inherit; resize: none;
+            height: 72px; outline: none; transition: box-shadow 0.2s;
+        }
+        .memo-input:focus { box-shadow: 0 0 0 2px var(--primary-color); }
+        .memo-input::placeholder { color: #C7C7CC; }
 
         /* 월간 달력 뷰 */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600;}
@@ -133,6 +143,7 @@
 
     <!-- 탭 1: 주간 요약 (기본화면) -->
     <div id="tab-weekly" class="tab-content active">
+        <!-- 메인 4버튼 -->
         <div class="section-card">
             <h2 class="section-title">목표 달성 기록</h2>
             <div class="btn-grid">
@@ -151,9 +162,16 @@
             </div>
         </div>
 
+        <!-- 주간 기록 뷰 -->
         <div class="section-card">
             <h2 class="section-title">주간 기록 <span class="date-range" style="font-size:11px;">(요일을 터치해 수정)</span></h2>
             <div class="week-view" id="weekViewContainer"></div>
+        </div>
+
+        <!-- 한 줄 메모 -->
+        <div class="section-card">
+            <h2 class="section-title">한 줄 메모</h2>
+            <textarea id="memoInput" class="memo-input" placeholder="이날의 특이사항이나 체중 등을 기록해보세요." oninput="saveMemo()"></textarea>
         </div>
     </div>
 
@@ -173,31 +191,22 @@
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
 
-        <!-- 1. 월간 달성률 -->
         <div class="section-card">
             <h2 class="section-title">월간 누적 달성률 <span class="date-range" id="label-monthly"></span></h2>
             <div id="stat-monthly"></div>
         </div>
-
-        <!-- 2. 분기별 통계 -->
         <div class="section-card">
             <h2 class="section-title">분기 누적 달성률 <span class="date-range" id="label-quarterly"></span></h2>
             <div id="stat-quarterly"></div>
         </div>
-
-        <!-- 3. 반기별 통계 -->
         <div class="section-card">
             <h2 class="section-title">반기 누적 달성률 <span class="date-range" id="label-halfyearly"></span></h2>
             <div id="stat-halfyearly"></div>
         </div>
-
-        <!-- 4. 연간 통계 -->
         <div class="section-card">
             <h2 class="section-title">올해 누적 달성률 <span class="date-range" id="label-yearly"></span></h2>
             <div id="stat-yearly"></div>
         </div>
-
-        <!-- 5. 작년 vs 올해 비교 -->
         <div class="section-card">
             <h2 class="section-title">연도별 비교 <span class="date-range">작년 vs 올해</span></h2>
             <div id="stat-yoy"></div>
@@ -215,15 +224,12 @@
     </div>
 
 <script>
-    // 시스템 오늘 날짜 (고정)
     const systemToday = new Date();
     const todayStr = getLocalIsoDate(systemToday);
     
-    // 현재 선택된(수정 중인) 활성 날짜
     let activeDate = new Date();
     let activeDateStr = getLocalIsoDate(activeDate);
 
-    // 달력 뷰 변수
     let viewYear = systemToday.getFullYear();
     let viewMonth = systemToday.getMonth();
     
@@ -231,12 +237,20 @@
     const taskEmojis = { workout: '💪', pill: '💊', water: '💧', alcohol: '🍷' };
     const taskNames = { workout: '일일 운동', pill: '영양제 복용', water: '물/저탄수 식단', alcohol: '소주/와인 절주' };
 
-    // DB 초기화
     let db = JSON.parse(localStorage.getItem('routineDB')) || {};
-    if (!db[todayStr]) db[todayStr] = { workout: false, pill: false, water: false, alcohol: false };
-    if (!db[activeDateStr]) db[activeDateStr] = { workout: false, pill: false, water: false, alcohol: false };
+    
+    // 데이터베이스 구조에 memo 추가
+    function initDB(dateStr) {
+        if (!db[dateStr]) {
+            db[dateStr] = { workout: false, pill: false, water: false, alcohol: false, memo: "" };
+        } else if (db[dateStr].memo === undefined) {
+            db[dateStr].memo = ""; // 기존 사용자 호환성 유지
+        }
+    }
+    
+    initDB(todayStr);
+    initDB(activeDateStr);
 
-    // 유틸 함수
     function getLocalIsoDate(dateObj) {
         return dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
     }
@@ -244,45 +258,50 @@
         return `${dateObj.getMonth() + 1}.${dateObj.getDate()}`;
     }
 
-    // 초기 실행
     function init() {
         renderAll();
     }
 
-    // 날짜 선택 및 변경 로직
     function selectDate(dStr) {
         const parts = dStr.split('-');
         activeDate = new Date(parts[0], parts[1] - 1, parts[2]);
         activeDateStr = dStr;
-        if (!db[activeDateStr]) db[activeDateStr] = { workout: false, pill: false, water: false, alcohol: false };
+        initDB(activeDateStr);
         renderAll();
     }
 
     function changeWeek(offset) {
         activeDate.setDate(activeDate.getDate() + (offset * 7));
         activeDateStr = getLocalIsoDate(activeDate);
-        if (!db[activeDateStr]) db[activeDateStr] = { workout: false, pill: false, water: false, alcohol: false };
+        initDB(activeDateStr);
         renderAll();
     }
 
     function returnToToday() {
         activeDate = new Date();
         activeDateStr = getLocalIsoDate(activeDate);
+        initDB(activeDateStr);
         renderAll();
     }
 
-    // 버튼 토글 (선택된 활성 날짜 기준)
     function toggleTask(task) {
         db[activeDateStr][task] = !db[activeDateStr][task];
         localStorage.setItem('routineDB', JSON.stringify(db));
         renderAll();
     }
 
-    // 전체 렌더링
+    // 메모 실시간 저장 함수
+    function saveMemo() {
+        const memoValue = document.getElementById('memoInput').value;
+        db[activeDateStr].memo = memoValue;
+        localStorage.setItem('routineDB', JSON.stringify(db));
+    }
+
     function renderAll() {
         renderHeader();
         renderMainButtons();
         renderWeekView();
+        renderMemo();
         renderCalendar();
         renderStats();
     }
@@ -296,7 +315,6 @@
         const weekNum = Math.ceil((activeDate.getDate() + firstDayOfMonth.getDay()) / 7);
         document.getElementById('weekDisplay').innerText = `${activeDate.getMonth() + 1}월 ${weekNum}주차`;
 
-        // 오늘이 아니면 '오늘로 복귀' 버튼 표시
         document.getElementById('btnReturnToday').style.display = isToday ? 'none' : 'block';
     }
 
@@ -337,7 +355,11 @@
         }
     }
 
-    // 캘린더 (기존과 동일하게 작동)
+    // 메모 필드 렌더링
+    function renderMemo() {
+        document.getElementById('memoInput').value = db[activeDateStr].memo || "";
+    }
+
     function renderCalendar() {
         document.getElementById('currentMonthDisplay').innerText = `${viewYear}년 ${viewMonth + 1}월`;
         const grid = document.getElementById('calendarGrid');
@@ -364,6 +386,11 @@
                 html += `<div class="mini-icon ${isActive}" style="font-size:10px; width:12px; height:12px;">${taskEmojis[task]}</div>`;
             });
             
+            // 달력에도 메모가 있는 날은 작게 표시(선택사항)
+            if (db[dStr] && db[dStr].memo) {
+                html += `<div style="width:4px; height:4px; background-color:var(--text-sub); border-radius:50%; margin-top:2px;"></div>`;
+            }
+            
             html += `</div></div>`;
             grid.innerHTML += html;
         }
@@ -376,7 +403,6 @@
         renderCalendar();
     }
 
-    // 통계 (항상 시스템상 오늘 기준으로 고정 계산)
     function getStatsForPeriod(startDate, endDate) {
         let days = 0;
         let stats = { workout: 0, pill: 0, water: 0, alcohol: 0 };
@@ -419,14 +445,12 @@
         const tYear = systemToday.getFullYear();
         const tMonth = systemToday.getMonth();
         
-        // 1. 월간
         const mStart = new Date(tYear, tMonth, 1);
         const mEnd = new Date(tYear, tMonth + 1, 0); 
         const mData = getStatsForPeriod(mStart, mEnd);
         document.getElementById('stat-monthly').innerHTML = createProgressHtml(mData.stats, mData.days);
         document.getElementById('label-monthly').innerText = `(${formatDate(mStart)} ~ ${formatDate(mEnd)})`;
 
-        // 2. 분기간
         const qStartMonth = Math.floor(tMonth / 3) * 3;
         const qStart = new Date(tYear, qStartMonth, 1);
         const qEnd = new Date(tYear, qStartMonth + 3, 0);
@@ -434,7 +458,6 @@
         document.getElementById('stat-quarterly').innerHTML = createProgressHtml(qData.stats, qData.days);
         document.getElementById('label-quarterly').innerText = `(${formatDate(qStart)} ~ ${formatDate(qEnd)})`;
 
-        // 3. 반기간
         const hStartMonth = Math.floor(tMonth / 6) * 6;
         const hStart = new Date(tYear, hStartMonth, 1);
         const hEnd = new Date(tYear, hStartMonth + 6, 0);
@@ -442,14 +465,12 @@
         document.getElementById('stat-halfyearly').innerHTML = createProgressHtml(hData.stats, hData.days);
         document.getElementById('label-halfyearly').innerText = `(${formatDate(hStart)} ~ ${formatDate(hEnd)})`;
 
-        // 4. 연간
         const yStart = new Date(tYear, 0, 1);
         const yEnd = new Date(tYear, 11, 31);
         const yData = getStatsForPeriod(yStart, yEnd);
         document.getElementById('stat-yearly').innerHTML = createProgressHtml(yData.stats, yData.days);
         document.getElementById('label-yearly').innerText = `(${formatDate(yStart)} ~ ${formatDate(yEnd)})`;
 
-        // 5. YoY
         const lastYStart = new Date(tYear - 1, 0, 1);
         const lastYEnd = new Date(tYear - 1, 11, 31);
         const lastYData = getStatsForPeriod(lastYStart, lastYEnd);
