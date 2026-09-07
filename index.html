@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>My Daily Routine</title>
+    <style>
+        :root {
+            --bg-color: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --primary-color: #34C759;
+            --text-main: #1C1C1E;
+            --text-sub: #8E8E93;
+            --gray-btn: #E5E5EA;
+            --gray-light: #F2F2F7;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px 16px;
+            color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+        }
+        .header p {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin: 0;
+        }
+        
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            margin-top: 0;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .check-btn {
+            background-color: var(--gray-btn);
+            border: none;
+            border-radius: 16px;
+            padding: 16px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-sub);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .check-btn span.icon { font-size: 28px; }
+        
+        .check-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(0.97);
+        }
+
+        .week-view {
+            display: flex;
+            justify-content: space-between;
+        }
+        .day-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .day-name { font-size: 12px; color: var(--text-sub); font-weight: 500;}
+        .day-name.today { color: var(--primary-color); font-weight: 700; }
+        
+        /* 2x2 고정 미니 아이콘 그리드 */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            background-color: var(--gray-light);
+            padding: 6px;
+            border-radius: 12px;
+        }
+        .mini-icon {
+            font-size: 12px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s ease;
+        }
+        /* 미달성 항목: 옅게 표시하여 자리만 유지 */
+        .mini-icon.inactive {
+            opacity: 0.15;
+            filter: grayscale(100%);
+        }
+        /* 달성 항목: 100% 불투명도 */
+        .mini-icon.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 id="dateDisplay">2026년 9월 7일</h1>
+        <p id="weekDisplay">9월 2주차</p>
+    </div>
+
+    <!-- 오늘 체크인 섹션 -->
+    <div class="section-card">
+        <h2 class="section-title">오늘의 목표 달성</h2>
+        <div class="btn-grid">
+            <button class="check-btn" id="btn-workout" onclick="toggleTask('workout')">
+                <span class="icon">💪</span>운동 완료
+            </button>
+            <button class="check-btn" id="btn-pill" onclick="toggleTask('pill')">
+                <span class="icon">💊</span>영양제 복용
+            </button>
+            <button class="check-btn" id="btn-water" onclick="toggleTask('water')">
+                <span class="icon">💧</span>물/저탄수
+            </button>
+            <button class="check-btn" id="btn-alcohol" onclick="toggleTask('alcohol')">
+                <span class="icon">🍷</span>절주 완료
+            </button>
+        </div>
+    </div>
+
+    <!-- 이번 주 요약 섹션 -->
+    <div class="section-card">
+        <h2 class="section-title">이번 주 요약</h2>
+        <div class="week-view" id="weekViewContainer">
+            <!-- JS 렌더링 -->
+        </div>
+    </div>
+
+<script>
+    const today = new Date();
+    const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    
+    const tasks = ['workout', 'pill', 'water', 'alcohol'];
+
+    let db = JSON.parse(localStorage.getItem('routineDB')) || {};
+    if (!db[todayStr]) {
+        db[todayStr] = { workout: false, pill: false, water: false, alcohol: false };
+    }
+
+    function init() {
+        document.getElementById('dateDisplay').innerText = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+        
+        tasks.forEach(task => {
+            if (db[todayStr][task]) {
+                document.getElementById(`btn-${task}`).classList.add('active');
+            }
+        });
+        renderWeekView();
+    }
+
+    function toggleTask(task) {
+        db[todayStr][task] = !db[todayStr][task];
+        localStorage.setItem('routineDB', JSON.stringify(db));
+        
+        const btn = document.getElementById(`btn-${task}`);
+        if (db[todayStr][task]) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+        renderWeekView();
+    }
+
+    function renderWeekView() {
+        const container = document.getElementById('weekViewContainer');
+        container.innerHTML = ''; 
+        
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        const currentDay = today.getDay(); 
+        
+        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay; 
+        let startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() + mondayOffset);
+
+        for (let i = 0; i < 7; i++) {
+            let targetDate = new Date(startOfWeek);
+            targetDate.setDate(startOfWeek.getDate() + i);
+            let dateStr = targetDate.getFullYear() + '-' + String(targetDate.getMonth() + 1).padStart(2, '0') + '-' + String(targetDate.getDate()).padStart(2, '0');
+            
+            // 데이터 확인 및 활성화 상태 클래스 지정
+            let wClass = (db[dateStr] && db[dateStr].workout) ? 'active' : 'inactive';
+            let pClass = (db[dateStr] && db[dateStr].pill) ? 'active' : 'inactive';
+            let waClass = (db[dateStr] && db[dateStr].water) ? 'active' : 'inactive';
+            let aClass = (db[dateStr] && db[dateStr].alcohol) ? 'active' : 'inactive';
+
+            let isToday = (dateStr === todayStr) ? 'today' : '';
+            
+            // 2x2 고정 미니 아이콘 블록 렌더링
+            container.innerHTML += `
+                <div class="day-col">
+                    <span class="day-name ${isToday}">${dayNames[targetDate.getDay()]}</span>
+                    <div class="icon-grid">
+                        <div class="mini-icon ${wClass}">💪</div>
+                        <div class="mini-icon ${pClass}">💊</div>
+                        <div class="mini-icon ${waClass}">💧</div>
+                        <div class="mini-icon ${aClass}">🍷</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>
