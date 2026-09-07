@@ -21,14 +21,21 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             margin: 0;
-            padding: 20px 16px 100px 16px; /* 하단 네비게이션 여백 */
+            padding: 20px 16px 100px 16px; 
             color: var(--text-main);
             -webkit-tap-highlight-color: transparent;
         }
-        .header { text-align: center; margin-bottom: 24px; }
-        .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px 0; }
-        .header p { font-size: 14px; color: var(--text-sub); margin: 0; }
         
+        /* 상단 헤더 및 주간 이동 네비게이션 */
+        .header { text-align: center; margin-bottom: 20px; position: relative; }
+        .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; }
+        .week-nav { display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .week-nav-btn { background: var(--gray-btn); border: none; font-size: 14px; color: var(--text-main); border-radius: 12px; padding: 6px 12px; cursor: pointer; font-weight: 600; }
+        .week-nav-text { font-size: 14px; color: var(--text-sub); font-weight: 500; min-width: 70px;}
+
+        /* 날짜 복귀 버튼 */
+        .return-today { position: absolute; right: 0; top: 0; font-size: 12px; color: var(--primary-color); font-weight: 600; padding: 6px; cursor: pointer; display: none; }
+
         .section-card {
             background-color: var(--card-bg);
             border-radius: 20px;
@@ -38,8 +45,9 @@
         }
         .section-title {
             font-size: 16px; font-weight: 600; margin-bottom: 16px; margin-top: 0;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: baseline;
         }
+        .date-range { font-size: 12px; font-weight: normal; color: var(--text-sub); }
 
         /* 일일 버튼 그리드 */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -52,16 +60,21 @@
         .check-btn span.icon { font-size: 28px; }
         .check-btn.active { background-color: var(--primary-color); color: white; transform: scale(0.97); }
 
-        /* 주간 뷰 */
+        /* 주간 뷰 및 날짜 선택 하이라이트 */
         .week-view { display: flex; justify-content: space-between; }
-        .day-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .day-col { 
+            display: flex; flex-direction: column; align-items: center; gap: 8px; 
+            cursor: pointer; padding: 6px 2px; border-radius: 12px; transition: background-color 0.2s;
+            border: 2px solid transparent; /* 기본 투명 테두리 */
+        }
+        .day-col.selected { border-color: var(--primary-color); background-color: rgba(52, 199, 89, 0.05); }
         .day-name { font-size: 12px; color: var(--text-sub); font-weight: 500;}
         .day-name.today { color: var(--primary-color); font-weight: 700; }
         
         /* 2x2 고정 미니 아이콘 */
         .icon-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
-            background-color: var(--gray-light); padding: 6px; border-radius: 12px;
+            background-color: var(--gray-light); padding: 6px; border-radius: 12px; pointer-events: none;
         }
         .mini-icon { font-size: 12px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
         .mini-icon.inactive { opacity: 0.15; filter: grayscale(100%); }
@@ -77,11 +90,15 @@
         .cal-cell.today .cal-date { background-color: var(--primary-color); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         
         /* 통계 프로그레스 바 */
-        .stat-row { margin-bottom: 12px; }
+        .stat-row { margin-bottom: 14px; }
         .stat-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: 500;}
         .progress-bg { background-color: var(--gray-btn); height: 8px; border-radius: 4px; overflow: hidden; }
-        .progress-fill { background-color: var(--primary-color); height: 100%; transition: width 0.5s ease; }
+        .progress-fill { background-color: var(--primary-color); height: 100%; transition: width 0.5s ease; border-radius: 4px;}
 
+        /* 전년도 비교 바 */
+        .yoy-bar-container { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+        .yoy-label { font-size: 10px; color: var(--text-sub); width: 24px; text-align: right; }
+        
         /* 탭 라우팅 */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -91,7 +108,8 @@
             position: fixed; bottom: 0; left: 0; right: 0;
             background-color: var(--nav-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-top: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around;
-            padding-bottom: env(safe-area-inset-bottom); /* 아이폰 하단 홈바 여백 */
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 100;
         }
         .nav-item {
             flex: 1; padding: 12px 0; text-align: center; font-size: 12px; font-weight: 600;
@@ -105,13 +123,18 @@
 
     <div class="header">
         <h1 id="dateDisplay"></h1>
-        <p id="weekDisplay"></p>
+        <div class="week-nav">
+            <button class="week-nav-btn" onclick="changeWeek(-1)">◀ 이전</button>
+            <span id="weekDisplay" class="week-nav-text"></span>
+            <button class="week-nav-btn" onclick="changeWeek(1)">다음 ▶</button>
+        </div>
+        <div id="btnReturnToday" class="return-today" onclick="returnToToday()">오늘로 복귀</div>
     </div>
 
     <!-- 탭 1: 주간 요약 (기본화면) -->
     <div id="tab-weekly" class="tab-content active">
         <div class="section-card">
-            <h2 class="section-title">오늘의 목표 달성</h2>
+            <h2 class="section-title">목표 달성 기록</h2>
             <div class="btn-grid">
                 <button class="check-btn" id="btn-workout" onclick="toggleTask('workout')">
                     <span class="icon">💪</span>운동 완료
@@ -129,17 +152,18 @@
         </div>
 
         <div class="section-card">
-            <h2 class="section-title">이번 주 요약</h2>
+            <h2 class="section-title">주간 기록 <span class="date-range" style="font-size:11px;">(요일을 터치해 수정)</span></h2>
             <div class="week-view" id="weekViewContainer"></div>
         </div>
     </div>
 
     <!-- 탭 2: 월간 달력 및 통계 -->
     <div id="tab-monthly" class="tab-content">
+        <!-- 달력 -->
         <div class="section-card">
             <div class="calendar-header">
                 <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
-                <span id="currentMonthDisplay">2026년 9월</span>
+                <span id="currentMonthDisplay"></span>
                 <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
             </div>
             <div class="calendar-grid" id="calendarHeader">
@@ -149,16 +173,41 @@
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
 
+        <!-- 1. 월간 달성률 -->
         <div class="section-card">
-            <h2 class="section-title">분기 누적 달성률 (이번 분기)</h2>
-            <div id="statsContainer"></div>
+            <h2 class="section-title">월간 누적 달성률 <span class="date-range" id="label-monthly"></span></h2>
+            <div id="stat-monthly"></div>
+        </div>
+
+        <!-- 2. 분기별 통계 -->
+        <div class="section-card">
+            <h2 class="section-title">분기 누적 달성률 <span class="date-range" id="label-quarterly"></span></h2>
+            <div id="stat-quarterly"></div>
+        </div>
+
+        <!-- 3. 반기별 통계 -->
+        <div class="section-card">
+            <h2 class="section-title">반기 누적 달성률 <span class="date-range" id="label-halfyearly"></span></h2>
+            <div id="stat-halfyearly"></div>
+        </div>
+
+        <!-- 4. 연간 통계 -->
+        <div class="section-card">
+            <h2 class="section-title">올해 누적 달성률 <span class="date-range" id="label-yearly"></span></h2>
+            <div id="stat-yearly"></div>
+        </div>
+
+        <!-- 5. 작년 vs 올해 비교 -->
+        <div class="section-card">
+            <h2 class="section-title">연도별 비교 <span class="date-range">작년 vs 올해</span></h2>
+            <div id="stat-yoy"></div>
         </div>
     </div>
 
     <!-- 하단 네비게이션 -->
     <div class="bottom-nav">
         <div class="nav-item active" id="nav-weekly" onclick="switchTab('weekly')">
-            <span class="nav-icon">📅</span>주간 체크인
+            <span class="nav-icon">📅</span>주간 체크
         </div>
         <div class="nav-item" id="nav-monthly" onclick="switchTab('monthly')">
             <span class="nav-icon">📊</span>월간 & 통계
@@ -166,69 +215,116 @@
     </div>
 
 <script>
-    const today = new Date();
-    const todayStr = getLocalIsoDate(today);
-    let viewYear = today.getFullYear();
-    let viewMonth = today.getMonth();
+    // 시스템 오늘 날짜 (고정)
+    const systemToday = new Date();
+    const todayStr = getLocalIsoDate(systemToday);
+    
+    // 현재 선택된(수정 중인) 활성 날짜
+    let activeDate = new Date();
+    let activeDateStr = getLocalIsoDate(activeDate);
+
+    // 달력 뷰 변수
+    let viewYear = systemToday.getFullYear();
+    let viewMonth = systemToday.getMonth();
     
     const tasks = ['workout', 'pill', 'water', 'alcohol'];
     const taskEmojis = { workout: '💪', pill: '💊', water: '💧', alcohol: '🍷' };
     const taskNames = { workout: '일일 운동', pill: '영양제 복용', water: '물/저탄수 식단', alcohol: '소주/와인 절주' };
 
+    // DB 초기화
     let db = JSON.parse(localStorage.getItem('routineDB')) || {};
     if (!db[todayStr]) db[todayStr] = { workout: false, pill: false, water: false, alcohol: false };
+    if (!db[activeDateStr]) db[activeDateStr] = { workout: false, pill: false, water: false, alcohol: false };
 
-    // 안전한 YYYY-MM-DD 변환 함수
+    // 유틸 함수
     function getLocalIsoDate(dateObj) {
         return dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
     }
+    function formatDate(dateObj) {
+        return `${dateObj.getMonth() + 1}.${dateObj.getDate()}`;
+    }
 
+    // 초기 실행
     function init() {
-        document.getElementById('dateDisplay').innerText = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
-        
-        // 주차 계산
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const weekNum = Math.ceil((today.getDate() + firstDayOfMonth.getDay()) / 7);
-        document.getElementById('weekDisplay').innerText = `${today.getMonth() + 1}월 ${weekNum}주차`;
-
-        tasks.forEach(task => {
-            if (db[todayStr][task]) document.getElementById(`btn-${task}`).classList.add('active');
-        });
-        
         renderAll();
     }
 
+    // 날짜 선택 및 변경 로직
+    function selectDate(dStr) {
+        const parts = dStr.split('-');
+        activeDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        activeDateStr = dStr;
+        if (!db[activeDateStr]) db[activeDateStr] = { workout: false, pill: false, water: false, alcohol: false };
+        renderAll();
+    }
+
+    function changeWeek(offset) {
+        activeDate.setDate(activeDate.getDate() + (offset * 7));
+        activeDateStr = getLocalIsoDate(activeDate);
+        if (!db[activeDateStr]) db[activeDateStr] = { workout: false, pill: false, water: false, alcohol: false };
+        renderAll();
+    }
+
+    function returnToToday() {
+        activeDate = new Date();
+        activeDateStr = getLocalIsoDate(activeDate);
+        renderAll();
+    }
+
+    // 버튼 토글 (선택된 활성 날짜 기준)
     function toggleTask(task) {
-        db[todayStr][task] = !db[todayStr][task];
+        db[activeDateStr][task] = !db[activeDateStr][task];
         localStorage.setItem('routineDB', JSON.stringify(db));
-        
-        const btn = document.getElementById(`btn-${task}`);
-        btn.classList.toggle('active', db[todayStr][task]);
         renderAll();
     }
 
+    // 전체 렌더링
     function renderAll() {
+        renderHeader();
+        renderMainButtons();
         renderWeekView();
         renderCalendar();
         renderStats();
     }
 
-    // 1. 주간 뷰 렌더링
+    function renderHeader() {
+        const isToday = activeDateStr === todayStr;
+        const todayMark = isToday ? ' <span style="color:var(--primary-color); font-size:16px;">(오늘)</span>' : '';
+        document.getElementById('dateDisplay').innerHTML = `${activeDate.getFullYear()}년 ${activeDate.getMonth() + 1}월 ${activeDate.getDate()}일${todayMark}`;
+        
+        const firstDayOfMonth = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1);
+        const weekNum = Math.ceil((activeDate.getDate() + firstDayOfMonth.getDay()) / 7);
+        document.getElementById('weekDisplay').innerText = `${activeDate.getMonth() + 1}월 ${weekNum}주차`;
+
+        // 오늘이 아니면 '오늘로 복귀' 버튼 표시
+        document.getElementById('btnReturnToday').style.display = isToday ? 'none' : 'block';
+    }
+
+    function renderMainButtons() {
+        tasks.forEach(task => {
+            const btn = document.getElementById(`btn-${task}`);
+            btn.classList.toggle('active', db[activeDateStr] && db[activeDateStr][task]);
+        });
+    }
+
     function renderWeekView() {
         const container = document.getElementById('weekViewContainer');
         container.innerHTML = ''; 
         const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
         
-        let startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // 월요일 시작
+        let startOfWeek = new Date(activeDate);
+        startOfWeek.setDate(activeDate.getDate() - activeDate.getDay() + (activeDate.getDay() === 0 ? -6 : 1)); 
 
         for (let i = 0; i < 7; i++) {
             let tDate = new Date(startOfWeek);
             tDate.setDate(startOfWeek.getDate() + i);
             let dStr = getLocalIsoDate(tDate);
             
-            let html = `<div class="day-col">
-                <span class="day-name ${dStr === todayStr ? 'today' : ''}">${dayNames[tDate.getDay()]}</span>
+            let isSelected = dStr === activeDateStr ? 'selected' : '';
+            let isSystemToday = dStr === todayStr ? 'today' : '';
+
+            let html = `<div class="day-col ${isSelected}" onclick="selectDate('${dStr}')">
+                <span class="day-name ${isSystemToday}">${dayNames[tDate.getDay()]}</span>
                 <div class="icon-grid">`;
             
             tasks.forEach(task => {
@@ -241,7 +337,7 @@
         }
     }
 
-    // 2. 월간 달력 렌더링
+    // 캘린더 (기존과 동일하게 작동)
     function renderCalendar() {
         document.getElementById('currentMonthDisplay').innerText = `${viewYear}년 ${viewMonth + 1}월`;
         const grid = document.getElementById('calendarGrid');
@@ -250,12 +346,10 @@
         const firstDate = new Date(viewYear, viewMonth, 1);
         const lastDate = new Date(viewYear, viewMonth + 1, 0);
         
-        // 빈 칸 채우기
         for (let i = 0; i < firstDate.getDay(); i++) {
             grid.innerHTML += `<div></div>`;
         }
 
-        // 날짜 채우기
         for (let day = 1; day <= lastDate.getDate(); day++) {
             let tDate = new Date(viewYear, viewMonth, day);
             let dStr = getLocalIsoDate(tDate);
@@ -282,37 +376,35 @@
         renderCalendar();
     }
 
-    // 3. 분기 통계 렌더링
-    function renderStats() {
-        const currentQuarter = Math.floor(today.getMonth() / 3) + 1;
-        const qStartMonth = (currentQuarter - 1) * 3;
-        
-        let daysInQuarter = 0;
+    // 통계 (항상 시스템상 오늘 기준으로 고정 계산)
+    function getStatsForPeriod(startDate, endDate) {
+        let days = 0;
         let stats = { workout: 0, pill: 0, water: 0, alcohol: 0 };
-        
-        const qStartDate = new Date(today.getFullYear(), qStartMonth, 1);
-        let iterDate = new Date(qStartDate);
-        
-        // 이번 분기 시작일부터 오늘까지 집계
-        while (iterDate <= today) {
-            let dStr = getLocalIsoDate(iterDate);
-            daysInQuarter++;
-            if (db[dStr]) {
-                tasks.forEach(task => { if (db[dStr][task]) stats[task]++; });
-            }
-            iterDate.setDate(iterDate.getDate() + 1);
-        }
+        let iter = new Date(startDate);
+        iter.setHours(0,0,0,0);
+        let end = new Date(endDate);
+        end.setHours(0,0,0,0);
 
-        const container = document.getElementById('statsContainer');
-        container.innerHTML = '';
-        
+        while (iter <= end) {
+            days++; 
+            let dStr = getLocalIsoDate(iter);
+            if (db[dStr]) {
+                tasks.forEach(t => { if (db[dStr][t]) stats[t]++; });
+            }
+            iter.setDate(iter.getDate() + 1);
+        }
+        return { days, stats };
+    }
+
+    function createProgressHtml(stats, totalDays) {
+        let html = '';
         tasks.forEach(task => {
-            let pct = Math.round((stats[task] / daysInQuarter) * 100) || 0;
-            container.innerHTML += `
+            let pct = totalDays > 0 ? Math.round((stats[task] / totalDays) * 100) : 0;
+            html += `
                 <div class="stat-row">
                     <div class="stat-label">
                         <span>${taskEmojis[task]} ${taskNames[task]}</span>
-                        <span>${pct}% (${stats[task]}/${daysInQuarter}일)</span>
+                        <span>${pct}% (${stats[task]}/${totalDays}일)</span>
                     </div>
                     <div class="progress-bg">
                         <div class="progress-fill" style="width: ${pct}%;"></div>
@@ -320,15 +412,86 @@
                 </div>
             `;
         });
+        return html;
     }
 
-    // 탭 전환 로직
+    function renderStats() {
+        const tYear = systemToday.getFullYear();
+        const tMonth = systemToday.getMonth();
+        
+        // 1. 월간
+        const mStart = new Date(tYear, tMonth, 1);
+        const mEnd = new Date(tYear, tMonth + 1, 0); 
+        const mData = getStatsForPeriod(mStart, mEnd);
+        document.getElementById('stat-monthly').innerHTML = createProgressHtml(mData.stats, mData.days);
+        document.getElementById('label-monthly').innerText = `(${formatDate(mStart)} ~ ${formatDate(mEnd)})`;
+
+        // 2. 분기간
+        const qStartMonth = Math.floor(tMonth / 3) * 3;
+        const qStart = new Date(tYear, qStartMonth, 1);
+        const qEnd = new Date(tYear, qStartMonth + 3, 0);
+        const qData = getStatsForPeriod(qStart, qEnd);
+        document.getElementById('stat-quarterly').innerHTML = createProgressHtml(qData.stats, qData.days);
+        document.getElementById('label-quarterly').innerText = `(${formatDate(qStart)} ~ ${formatDate(qEnd)})`;
+
+        // 3. 반기간
+        const hStartMonth = Math.floor(tMonth / 6) * 6;
+        const hStart = new Date(tYear, hStartMonth, 1);
+        const hEnd = new Date(tYear, hStartMonth + 6, 0);
+        const hData = getStatsForPeriod(hStart, hEnd);
+        document.getElementById('stat-halfyearly').innerHTML = createProgressHtml(hData.stats, hData.days);
+        document.getElementById('label-halfyearly').innerText = `(${formatDate(hStart)} ~ ${formatDate(hEnd)})`;
+
+        // 4. 연간
+        const yStart = new Date(tYear, 0, 1);
+        const yEnd = new Date(tYear, 11, 31);
+        const yData = getStatsForPeriod(yStart, yEnd);
+        document.getElementById('stat-yearly').innerHTML = createProgressHtml(yData.stats, yData.days);
+        document.getElementById('label-yearly').innerText = `(${formatDate(yStart)} ~ ${formatDate(yEnd)})`;
+
+        // 5. YoY
+        const lastYStart = new Date(tYear - 1, 0, 1);
+        const lastYEnd = new Date(tYear - 1, 11, 31);
+        const lastYData = getStatsForPeriod(lastYStart, lastYEnd);
+        
+        let yoyHtml = '';
+        tasks.forEach(task => {
+            let thisPct = yData.days > 0 ? Math.round((yData.stats[task] / yData.days) * 100) : 0;
+            let lastPct = lastYData.days > 0 ? Math.round((lastYData.stats[task] / lastYData.days) * 100) : 0;
+            let diff = thisPct - lastPct;
+            let diffStr = diff >= 0 ? `<span style="color:var(--primary-color);">▲ ${diff}%</span>` : `<span style="color:#FF3B30;">▼ ${Math.abs(diff)}%</span>`;
+
+            yoyHtml += `
+                <div class="stat-row" style="margin-bottom: 20px;">
+                    <div class="stat-label" style="margin-bottom: 8px;">
+                        <span>${taskEmojis[task]} ${taskNames[task]}</span>
+                        <span>작년 ${lastPct}% ➔ <strong>올해 ${thisPct}%</strong> (${diffStr})</span>
+                    </div>
+                    <div class="yoy-bar-container">
+                        <span class="yoy-label">작년</span>
+                        <div class="progress-bg" style="flex:1; height:6px;">
+                            <div class="progress-fill" style="width: ${lastPct}%; background-color: var(--text-sub);"></div>
+                        </div>
+                    </div>
+                    <div class="yoy-bar-container">
+                        <span class="yoy-label">올해</span>
+                        <div class="progress-bg" style="flex:1; height:6px;">
+                            <div class="progress-fill" style="width: ${thisPct}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('stat-yoy').innerHTML = yoyHtml;
+    }
+
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         
         document.getElementById(`tab-${tabId}`).classList.add('active');
         document.getElementById(`nav-${tabId}`).classList.add('active');
+        window.scrollTo(0, 0); 
     }
 
     init();
