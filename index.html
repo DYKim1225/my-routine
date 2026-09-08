@@ -6,6 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>My Daily Routine</title>
+    
+    <!-- iOS 전용 네이티브 앱 아이콘 -->
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/apple-fitness.png">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/192/apple-fitness.png">
+
     <style>
         * {
             box-sizing: border-box;
@@ -31,6 +36,21 @@
         }
         .header { text-align: center; margin-bottom: 20px; position: relative; }
         .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; }
+        
+        /* 연속 달성 스트릭 배지 */
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: rgba(255, 149, 0, 0.12);
+            color: #FF9500;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+
         .week-nav { display: flex; justify-content: center; align-items: center; gap: 16px; }
         .week-nav-btn { background: var(--gray-btn); border: none; font-size: 14px; color: var(--text-main); border-radius: 12px; padding: 6px 12px; cursor: pointer; font-weight: 600; }
         .week-nav-text { font-size: 14px; color: var(--text-sub); font-weight: 500; min-width: 70px; }
@@ -79,6 +99,14 @@
         .yoy-bar-container { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
         .yoy-label { font-size: 10px; color: var(--text-sub); width: 24px; text-align: right; }
         
+        /* 백업 복원 버튼 */
+        .restore-btn {
+            width: 100%; background: none; border: 1px solid var(--gray-btn); color: var(--text-sub);
+            padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+            margin-top: 8px; transition: background 0.2s;
+        }
+        .restore-btn:active { background-color: var(--gray-light); }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--nav-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
@@ -90,6 +118,7 @@
 <body>
     <div class="header">
         <h1 id="dateDisplay"></h1>
+        <div id="streakBadge" class="streak-badge" style="display:none;"></div>
         <div class="week-nav">
             <button class="week-nav-btn" onclick="changeWeek(-1)">◀ 이전</button>
             <span id="weekDisplay" class="week-nav-text"></span>
@@ -138,6 +167,11 @@
         <div class="section-card"><h2 class="section-title">반기 누적 달성률 <span class="date-range" id="label-halfyearly"></span></h2><div id="stat-halfyearly"></div></div>
         <div class="section-card"><h2 class="section-title">올해 누적 달성률 <span class="date-range" id="label-yearly"></span></h2><div id="stat-yearly"></div></div>
         <div class="section-card"><h2 class="section-title">연도별 비교 <span class="date-range">작년 vs 올해</span></h2><div id="stat-yoy"></div></div>
+        
+        <!-- 구글 시트 복원 카드 -->
+        <div class="section-card" style="padding:16px;">
+            <button class="restore-btn" id="btnRestore" onclick="restoreFromGoogleSheet()">🔄 구글 시트에서 데이터 복원하기</button>
+        </div>
     </div>
 
     <!-- 하단 네비게이션 -->
@@ -180,7 +214,33 @@
         return `${dateObj.getMonth() + 1}.${dateObj.getDate()}`; 
     }
 
-    // 백그라운드 디바운스 동기화
+    // ⚡ 스트릭(연속 실천일) 계산 (0.0001초 소요)
+    function calculateStreak() {
+        let streak = 0;
+        let checkDate = new Date(systemToday);
+        
+        // 오늘 달성 여부 확인
+        let dStr = getLocalIsoDate(checkDate);
+        let hasDoneToday = db[dStr] && (db[dStr].workout || db[dStr].pill || db[dStr].water || db[dStr].alcohol);
+        
+        if (!hasDoneToday) {
+            // 오늘은 아직 안 했더라도 어제까지 했으면 스트릭 유지
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+
+        while (true) {
+            let curStr = getLocalIsoDate(checkDate);
+            if (db[curStr] && (db[curStr].workout || db[curStr].pill || db[curStr].water || db[curStr].alcohol)) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }
+
+    // 백그라운드 동기화 (Debounce)
     let syncTimer = null;
     function queueSync(dateStr) {
         if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") return;
@@ -215,6 +275,29 @@
                 memo: currentData.memo || ""
             })
         }).catch(e => console.log('Sync Error:', e));
+    }
+
+    // 🔄 구글 시트에서 폰으로 데이터 복원
+    function restoreFromGoogleSheet() {
+        if (!confirm("구글 시트에 저장된 데이터를 가져와 현재 폰의 데이터를 덮어씌울까요?")) return;
+
+        const btn = document.getElementById('btnRestore');
+        btn.innerText = "복원 중...";
+        btn.disabled = true;
+
+        fetch(GOOGLE_APP_URL)
+            .then(res => res.json())
+            .then(data => {
+                db = Object.assign({}, db, data);
+                localStorage.setItem('routineDB', JSON.stringify(db));
+                alert("구글 시트의 데이터가 성공적으로 복원되었습니다.");
+                location.reload();
+            })
+            .catch(err => {
+                alert("데이터 복원 중 오류가 발생했습니다: " + err);
+                btn.innerText = "🔄 구글 시트에서 데이터 복원하기";
+                btn.disabled = false;
+            });
     }
 
     function init() {
@@ -264,6 +347,7 @@
         
         document.getElementById(`btn-${task}`).classList.toggle('active', db[activeDateStr][task]);
         renderWeekView();
+        renderHeader(); // 스트릭 즉시 반영
         isMonthlyDirty = true;
         queueSync(activeDateStr);
     }
@@ -285,6 +369,16 @@
         const weekNum = Math.ceil((activeDate.getDate() + firstDayOfMonth.getDay()) / 7);
         document.getElementById('weekDisplay').innerText = `${activeDate.getMonth() + 1}월 ${weekNum}주차`;
         document.getElementById('btnReturnToday').style.display = isToday ? 'none' : 'block';
+
+        // 스트릭 배지 렌더링
+        const streak = calculateStreak();
+        const streakEl = document.getElementById('streakBadge');
+        if (streak > 0) {
+            streakEl.style.display = 'inline-flex';
+            streakEl.innerHTML = `🔥 ${streak}일 연속 실천 중`;
+        } else {
+            streakEl.style.display = 'none';
+        }
     }
 
     function renderMainButtons() {
