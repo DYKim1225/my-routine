@@ -7,6 +7,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>My Daily Routine</title>
     <style>
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
         :root {
             --bg-color: #F2F2F7;
             --card-bg: #FFFFFF;
@@ -17,44 +21,64 @@
             --gray-light: #F2F2F7;
             --nav-bg: rgba(255, 255, 255, 0.9);
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 16px 100px 16px; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 20px 16px 100px 16px; 
+            color: var(--text-main); 
+            -webkit-tap-highlight-color: transparent; 
+        }
         .header { text-align: center; margin-bottom: 20px; position: relative; }
         .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; }
         .week-nav { display: flex; justify-content: center; align-items: center; gap: 16px; }
         .week-nav-btn { background: var(--gray-btn); border: none; font-size: 14px; color: var(--text-main); border-radius: 12px; padding: 6px 12px; cursor: pointer; font-weight: 600; }
-        .week-nav-text { font-size: 14px; color: var(--text-sub); font-weight: 500; min-width: 70px;}
+        .week-nav-text { font-size: 14px; color: var(--text-sub); font-weight: 500; min-width: 70px; }
         .return-today { position: absolute; right: 0; top: 0; font-size: 12px; color: var(--primary-color); font-weight: 600; padding: 6px; cursor: pointer; display: none; }
+        
         .section-card { background-color: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
         .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; margin-top: 0; display: flex; justify-content: space-between; align-items: baseline; }
         .date-range { font-size: 12px; font-weight: normal; color: var(--text-sub); }
+        
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .check-btn { background-color: var(--gray-btn); border: none; border-radius: 16px; padding: 16px 12px; font-size: 14px; font-weight: 600; color: var(--text-sub); display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.2s; cursor: pointer; }
+        .check-btn { 
+            background-color: var(--gray-btn); border: none; border-radius: 16px; 
+            padding: 16px 12px; font-size: 14px; font-weight: 600; color: var(--text-sub); 
+            display: flex; flex-direction: column; align-items: center; gap: 8px; 
+            transition: transform 0.1s, background-color 0.15s; cursor: pointer; 
+            user-select: none; -webkit-user-select: none;
+        }
         .check-btn span.icon { font-size: 28px; }
         .check-btn.active { background-color: var(--primary-color); color: white; transform: scale(0.97); }
+
         .week-view { display: flex; justify-content: space-between; }
-        .day-col { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 6px 2px; border-radius: 12px; transition: background-color 0.2s; border: 2px solid transparent; }
+        .day-col { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 6px 2px; border-radius: 12px; transition: background-color 0.15s; border: 2px solid transparent; }
         .day-col.selected { border-color: var(--primary-color); background-color: rgba(52, 199, 89, 0.05); }
-        .day-name { font-size: 12px; color: var(--text-sub); font-weight: 500;}
+        .day-name { font-size: 12px; color: var(--text-sub); font-weight: 500; }
         .day-name.today { color: var(--primary-color); font-weight: 700; }
         .icon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background-color: var(--gray-light); padding: 6px; border-radius: 12px; pointer-events: none; }
         .mini-icon { font-size: 12px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
         .mini-icon.inactive { opacity: 0.15; filter: grayscale(100%); }
         .mini-icon.active { opacity: 1; }
+        
         .memo-input { width: 100%; box-sizing: border-box; background-color: var(--gray-light); border: none; border-radius: 12px; padding: 14px; font-size: 14px; color: var(--text-main); font-family: inherit; resize: none; height: 72px; outline: none; transition: box-shadow 0.2s; }
         .memo-input:focus { box-shadow: 0 0 0 2px var(--primary-color); }
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600;}
-        .calendar-nav-btn { background: none; border: none; font-size: 18px; color: var(--primary-color); cursor: pointer; padding: 4px 12px;}
+        
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; }
+        .calendar-nav-btn { background: none; border: none; font-size: 18px; color: var(--primary-color); cursor: pointer; padding: 4px 12px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .cal-day-name { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; }
-        .cal-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; border-radius: 8px;}
+        .cal-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; border-radius: 8px; }
         .cal-date { font-size: 12px; font-weight: 500; }
         .cal-cell.today .cal-date { background-color: var(--primary-color); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        
         .stat-row { margin-bottom: 14px; }
-        .stat-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: 500;}
+        .stat-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: 500; }
         .progress-bg { background-color: var(--gray-btn); height: 8px; border-radius: 4px; overflow: hidden; }
-        .progress-fill { background-color: var(--primary-color); height: 100%; transition: width 0.5s ease; border-radius: 4px;}
+        .progress-fill { background-color: var(--primary-color); height: 100%; transition: width 0.3s ease; border-radius: 4px; }
         .yoy-bar-container { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
         .yoy-label { font-size: 10px; color: var(--text-sub); width: 24px; text-align: right; }
+        
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--nav-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
@@ -91,7 +115,7 @@
         </div>
         <div class="section-card">
             <h2 class="section-title">한 줄 메모</h2>
-            <textarea id="memoInput" class="memo-input" placeholder="이날의 특이사항이나 체중 등을 기록해보세요." onblur="saveMemo()"></textarea>
+            <textarea id="memoInput" class="memo-input" placeholder="이날의 특이사항이나 체중 등을 기록해보세요." oninput="onMemoInput()" onblur="flushSync()"></textarea>
         </div>
     </div>
 
@@ -104,7 +128,8 @@
                 <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
             </div>
             <div class="calendar-grid" id="calendarHeader">
-                <div class="cal-day-name">일</div><div class="cal-day-name">월</div><div class="cal-day-name">화</div><div class="cal-day-name">수</div><div class="cal-day-name">목</div><div class="cal-day-name">금</div><div class="cal-day-name">토</div>
+                <div class="cal-day-name">일</div><div class="cal-day-name">월</div><div class="cal-day-name">화</div>
+                <div class="cal-day-name">수</div><div class="cal-day-name">목</div><div class="cal-day-name">금</div><div class="cal-day-name">토</div>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
@@ -122,7 +147,6 @@
     </div>
 
 <script>
-    // 전달해주신 구글 웹 앱 URL이 아래에 반영되었습니다.
     const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwBWXQaseq8NLRHrgt5kTWLcOLQaCe-EzDVqEnrFDyr8MN6Tbe9pFjCOe3jjdVMxo41/exec";
 
     const systemToday = new Date();
@@ -131,7 +155,8 @@
     let activeDateStr = getLocalIsoDate(activeDate);
     let viewYear = systemToday.getFullYear();
     let viewMonth = systemToday.getMonth();
-    
+    let isMonthlyDirty = true; 
+
     const tasks = ['workout', 'pill', 'water', 'alcohol'];
     const taskEmojis = { workout: '💪', pill: '💊', water: '💧', alcohol: '🍷' };
     const taskNames = { workout: '일일 운동', pill: '영양제 복용', water: '물/저탄수 식단', alcohol: '소주/와인 절주' };
@@ -145,75 +170,117 @@
             db[dateStr].memo = ""; 
         }
     }
-    
     initDB(todayStr);
     initDB(activeDateStr);
 
-    function getLocalIsoDate(dateObj) { return dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0'); }
-    function formatDate(dateObj) { return `${dateObj.getMonth() + 1}.${dateObj.getDate()}`; }
+    function getLocalIsoDate(dateObj) { 
+        return dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0'); 
+    }
+    function formatDate(dateObj) { 
+        return `${dateObj.getMonth() + 1}.${dateObj.getDate()}`; 
+    }
 
-    function init() { renderAll(); }
+    // 백그라운드 디바운스 동기화
+    let syncTimer = null;
+    function queueSync(dateStr) {
+        if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") return;
+        if (syncTimer) clearTimeout(syncTimer);
+        syncTimer = setTimeout(() => {
+            executeSync(dateStr);
+        }, 1200);
+    }
+
+    function flushSync() {
+        if (syncTimer) {
+            clearTimeout(syncTimer);
+            syncTimer = null;
+            executeSync(activeDateStr);
+        }
+    }
+
+    function executeSync(dateStr) {
+        const currentData = db[dateStr];
+        if (!currentData) return;
+
+        fetch(GOOGLE_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                date: dateStr,
+                workout: !!currentData.workout,
+                pill: !!currentData.pill,
+                water: !!currentData.water,
+                alcohol: !!currentData.alcohol,
+                memo: currentData.memo || ""
+            })
+        }).catch(e => console.log('Sync Error:', e));
+    }
+
+    function init() {
+        renderHeader();
+        renderMainButtons();
+        renderWeekView();
+        renderMemo();
+    }
 
     function selectDate(dStr) {
+        flushSync();
         const parts = dStr.split('-');
         activeDate = new Date(parts[0], parts[1] - 1, parts[2]);
         activeDateStr = dStr;
         initDB(activeDateStr);
-        renderAll();
+        renderHeader();
+        renderMainButtons();
+        renderWeekView();
+        renderMemo();
     }
 
     function changeWeek(offset) {
+        flushSync();
         activeDate.setDate(activeDate.getDate() + (offset * 7));
         activeDateStr = getLocalIsoDate(activeDate);
         initDB(activeDateStr);
-        renderAll();
+        renderHeader();
+        renderMainButtons();
+        renderWeekView();
+        renderMemo();
     }
 
     function returnToToday() {
+        flushSync();
         activeDate = new Date();
         activeDateStr = getLocalIsoDate(activeDate);
         initDB(activeDateStr);
-        renderAll();
-    }
-
-    function sendToGoogleSheet() {
-        if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") return; 
-        
-        const currentData = db[activeDateStr];
-        fetch(GOOGLE_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                date: activeDateStr,
-                workout: currentData.workout,
-                pill: currentData.pill,
-                water: currentData.water,
-                alcohol: currentData.alcohol,
-                memo: currentData.memo || ""
-            })
-        }).catch(e => console.log('Backup error', e));
+        renderHeader();
+        renderMainButtons();
+        renderWeekView();
+        renderMemo();
     }
 
     function toggleTask(task) {
         db[activeDateStr][task] = !db[activeDateStr][task];
         localStorage.setItem('routineDB', JSON.stringify(db));
-        renderAll();
-        sendToGoogleSheet(); 
+        
+        document.getElementById(`btn-${task}`).classList.toggle('active', db[activeDateStr][task]);
+        renderWeekView();
+        isMonthlyDirty = true;
+        queueSync(activeDateStr);
     }
 
-    function saveMemo() {
+    function onMemoInput() {
         const memoValue = document.getElementById('memoInput').value;
         db[activeDateStr].memo = memoValue;
         localStorage.setItem('routineDB', JSON.stringify(db));
-        renderAll();
-        sendToGoogleSheet(); 
+        isMonthlyDirty = true;
+        queueSync(activeDateStr);
     }
-
-    function renderAll() { renderHeader(); renderMainButtons(); renderWeekView(); renderMemo(); renderCalendar(); renderStats(); }
 
     function renderHeader() {
         const isToday = activeDateStr === todayStr;
         const todayMark = isToday ? ' <span style="color:var(--primary-color); font-size:16px;">(오늘)</span>' : '';
         document.getElementById('dateDisplay').innerHTML = `${activeDate.getFullYear()}년 ${activeDate.getMonth() + 1}월 ${activeDate.getDate()}일${todayMark}`;
+        
         const firstDayOfMonth = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1);
         const weekNum = Math.ceil((activeDate.getDate() + firstDayOfMonth.getDay()) / 7);
         document.getElementById('weekDisplay').innerText = `${activeDate.getMonth() + 1}월 ${weekNum}주차`;
@@ -223,46 +290,57 @@
     function renderMainButtons() {
         tasks.forEach(task => {
             const btn = document.getElementById(`btn-${task}`);
-            btn.classList.toggle('active', db[activeDateStr] && db[activeDateStr][task]);
+            btn.classList.toggle('active', !!(db[activeDateStr] && db[activeDateStr][task]));
         });
     }
 
     function renderWeekView() {
         const container = document.getElementById('weekViewContainer');
-        container.innerHTML = ''; 
         const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
         let startOfWeek = new Date(activeDate);
         startOfWeek.setDate(activeDate.getDate() - activeDate.getDay() + (activeDate.getDay() === 0 ? -6 : 1)); 
+        
+        let html = '';
         for (let i = 0; i < 7; i++) {
             let tDate = new Date(startOfWeek);
             tDate.setDate(startOfWeek.getDate() + i);
             let dStr = getLocalIsoDate(tDate);
             let isSelected = dStr === activeDateStr ? 'selected' : '';
             let isSystemToday = dStr === todayStr ? 'today' : '';
-            let html = `<div class="day-col ${isSelected}" onclick="selectDate('${dStr}')"><span class="day-name ${isSystemToday}">${dayNames[tDate.getDay()]}</span><div class="icon-grid">`;
+            
+            html += `<div class="day-col ${isSelected}" onclick="selectDate('${dStr}')"><span class="day-name ${isSystemToday}">${dayNames[tDate.getDay()]}</span><div class="icon-grid">`;
             tasks.forEach(task => {
                 let isActive = (db[dStr] && db[dStr][task]) ? 'active' : 'inactive';
                 html += `<div class="mini-icon ${isActive}">${taskEmojis[task]}</div>`;
             });
             html += `</div></div>`;
-            container.innerHTML += html;
         }
+        container.innerHTML = html;
     }
 
-    function renderMemo() { document.getElementById('memoInput').value = db[activeDateStr].memo || ""; }
+    function renderMemo() { 
+        document.getElementById('memoInput').value = db[activeDateStr].memo || ""; 
+    }
+
+    function renderMonthlyView() {
+        renderCalendar();
+        renderStats();
+        isMonthlyDirty = false;
+    }
 
     function renderCalendar() {
         document.getElementById('currentMonthDisplay').innerText = `${viewYear}년 ${viewMonth + 1}월`;
         const grid = document.getElementById('calendarGrid');
-        grid.innerHTML = '';
         const firstDate = new Date(viewYear, viewMonth, 1);
         const lastDate = new Date(viewYear, viewMonth + 1, 0);
-        for (let i = 0; i < firstDate.getDay(); i++) { grid.innerHTML += `<div></div>`; }
+        
+        let html = '';
+        for (let i = 0; i < firstDate.getDay(); i++) { html += `<div></div>`; }
         for (let day = 1; day <= lastDate.getDate(); day++) {
             let tDate = new Date(viewYear, viewMonth, day);
             let dStr = getLocalIsoDate(tDate);
             let isTodayClass = (dStr === todayStr) ? 'today' : '';
-            let html = `<div class="cal-cell ${isTodayClass}"><span class="cal-date">${day}</span><div class="icon-grid" style="padding:4px; gap:2px; border-radius:6px; background-color:transparent;">`;
+            html += `<div class="cal-cell ${isTodayClass}"><span class="cal-date">${day}</span><div class="icon-grid" style="padding:4px; gap:2px; border-radius:6px; background-color:transparent;">`;
             tasks.forEach(task => {
                 let isActive = (db[dStr] && db[dStr][task]) ? 'active' : 'inactive';
                 html += `<div class="mini-icon ${isActive}" style="font-size:10px; width:12px; height:12px;">${taskEmojis[task]}</div>`;
@@ -271,8 +349,8 @@
                 html += `<div style="width:4px; height:4px; background-color:var(--text-sub); border-radius:50%; margin-top:2px;"></div>`;
             }
             html += `</div></div>`;
-            grid.innerHTML += html;
         }
+        grid.innerHTML = html;
     }
 
     function changeMonth(offset) {
@@ -286,13 +364,16 @@
         let days = 0;
         let stats = { workout: 0, pill: 0, water: 0, alcohol: 0 };
         let iter = new Date(startDate);
-        iter.setHours(0,0,0,0);
+        iter.setHours(12, 0, 0, 0);
         let end = new Date(endDate);
-        end.setHours(0,0,0,0);
+        end.setHours(12, 0, 0, 0);
+
         while (iter <= end) {
             days++; 
             let dStr = getLocalIsoDate(iter);
-            if (db[dStr]) { tasks.forEach(t => { if (db[dStr][t]) stats[t]++; }); }
+            if (db[dStr]) { 
+                tasks.forEach(t => { if (db[dStr][t]) stats[t]++; }); 
+            }
             iter.setDate(iter.getDate() + 1);
         }
         return { days, stats };
@@ -353,11 +434,17 @@
     }
 
     function switchTab(tabId) {
+        flushSync();
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        
         document.getElementById(`tab-${tabId}`).classList.add('active');
         document.getElementById(`nav-${tabId}`).classList.add('active');
         window.scrollTo(0, 0); 
+
+        if (tabId === 'monthly' && isMonthlyDirty) {
+            renderMonthlyView();
+        }
     }
 
     init();
