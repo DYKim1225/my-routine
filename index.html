@@ -17,80 +17,31 @@
             --gray-light: #F2F2F7;
             --nav-bg: rgba(255, 255, 255, 0.9);
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px 16px 100px 16px; 
-            color: var(--text-main);
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* 상단 헤더 및 주간 이동 네비게이션 */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 16px 100px 16px; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
         .header { text-align: center; margin-bottom: 20px; position: relative; }
         .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; }
         .week-nav { display: flex; justify-content: center; align-items: center; gap: 16px; }
         .week-nav-btn { background: var(--gray-btn); border: none; font-size: 14px; color: var(--text-main); border-radius: 12px; padding: 6px 12px; cursor: pointer; font-weight: 600; }
         .week-nav-text { font-size: 14px; color: var(--text-sub); font-weight: 500; min-width: 70px;}
-
-        /* 날짜 복귀 버튼 */
         .return-today { position: absolute; right: 0; top: 0; font-size: 12px; color: var(--primary-color); font-weight: 600; padding: 6px; cursor: pointer; display: none; }
-
-        .section-card {
-            background-color: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-        .section-title {
-            font-size: 16px; font-weight: 600; margin-bottom: 16px; margin-top: 0;
-            display: flex; justify-content: space-between; align-items: baseline;
-        }
+        .section-card { background-color: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; margin-top: 0; display: flex; justify-content: space-between; align-items: baseline; }
         .date-range { font-size: 12px; font-weight: normal; color: var(--text-sub); }
-
-        /* 일일 버튼 그리드 */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .check-btn {
-            background-color: var(--gray-btn); border: none; border-radius: 16px;
-            padding: 16px 12px; font-size: 14px; font-weight: 600; color: var(--text-sub);
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
-            transition: all 0.2s; cursor: pointer;
-        }
+        .check-btn { background-color: var(--gray-btn); border: none; border-radius: 16px; padding: 16px 12px; font-size: 14px; font-weight: 600; color: var(--text-sub); display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.2s; cursor: pointer; }
         .check-btn span.icon { font-size: 28px; }
         .check-btn.active { background-color: var(--primary-color); color: white; transform: scale(0.97); }
-
-        /* 주간 뷰 및 날짜 선택 하이라이트 */
         .week-view { display: flex; justify-content: space-between; }
-        .day-col { 
-            display: flex; flex-direction: column; align-items: center; gap: 8px; 
-            cursor: pointer; padding: 6px 2px; border-radius: 12px; transition: background-color 0.2s;
-            border: 2px solid transparent;
-        }
+        .day-col { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 6px 2px; border-radius: 12px; transition: background-color 0.2s; border: 2px solid transparent; }
         .day-col.selected { border-color: var(--primary-color); background-color: rgba(52, 199, 89, 0.05); }
         .day-name { font-size: 12px; color: var(--text-sub); font-weight: 500;}
         .day-name.today { color: var(--primary-color); font-weight: 700; }
-        
-        /* 2x2 고정 미니 아이콘 */
-        .icon-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
-            background-color: var(--gray-light); padding: 6px; border-radius: 12px; pointer-events: none;
-        }
+        .icon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background-color: var(--gray-light); padding: 6px; border-radius: 12px; pointer-events: none; }
         .mini-icon { font-size: 12px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
         .mini-icon.inactive { opacity: 0.15; filter: grayscale(100%); }
         .mini-icon.active { opacity: 1; }
-
-        /* 메모 텍스트 입력창 */
-        .memo-input {
-            width: 100%; box-sizing: border-box; background-color: var(--gray-light);
-            border: none; border-radius: 12px; padding: 14px; font-size: 14px;
-            color: var(--text-main); font-family: inherit; resize: none;
-            height: 72px; outline: none; transition: box-shadow 0.2s;
-        }
+        .memo-input { width: 100%; box-sizing: border-box; background-color: var(--gray-light); border: none; border-radius: 12px; padding: 14px; font-size: 14px; color: var(--text-main); font-family: inherit; resize: none; height: 72px; outline: none; transition: box-shadow 0.2s; }
         .memo-input:focus { box-shadow: 0 0 0 2px var(--primary-color); }
-        .memo-input::placeholder { color: #C7C7CC; }
-
-        /* 월간 달력 뷰 */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600;}
         .calendar-nav-btn { background: none; border: none; font-size: 18px; color: var(--primary-color); cursor: pointer; padding: 4px 12px;}
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
@@ -98,39 +49,21 @@
         .cal-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; border-radius: 8px;}
         .cal-date { font-size: 12px; font-weight: 500; }
         .cal-cell.today .cal-date { background-color: var(--primary-color); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        
-        /* 통계 프로그레스 바 */
         .stat-row { margin-bottom: 14px; }
         .stat-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: 500;}
         .progress-bg { background-color: var(--gray-btn); height: 8px; border-radius: 4px; overflow: hidden; }
         .progress-fill { background-color: var(--primary-color); height: 100%; transition: width 0.5s ease; border-radius: 4px;}
-
-        /* 전년도 비교 바 */
         .yoy-bar-container { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
         .yoy-label { font-size: 10px; color: var(--text-sub); width: 24px; text-align: right; }
-        
-        /* 탭 라우팅 */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-
-        /* 하단 네비게이션 */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background-color: var(--nav-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around;
-            padding-bottom: env(safe-area-inset-bottom);
-            z-index: 100;
-        }
-        .nav-item {
-            flex: 1; padding: 12px 0; text-align: center; font-size: 12px; font-weight: 600;
-            color: var(--text-sub); cursor: pointer; display: flex; flex-direction: column; gap: 4px;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--nav-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
+        .nav-item { flex: 1; padding: 12px 0; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-sub); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .nav-item.active { color: var(--primary-color); }
         .nav-icon { font-size: 20px; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <h1 id="dateDisplay"></h1>
         <div class="week-nav">
@@ -141,43 +74,29 @@
         <div id="btnReturnToday" class="return-today" onclick="returnToToday()">오늘로 복귀</div>
     </div>
 
-    <!-- 탭 1: 주간 요약 (기본화면) -->
+    <!-- 탭 1: 주간 요약 -->
     <div id="tab-weekly" class="tab-content active">
-        <!-- 메인 4버튼 -->
         <div class="section-card">
             <h2 class="section-title">목표 달성 기록</h2>
             <div class="btn-grid">
-                <button class="check-btn" id="btn-workout" onclick="toggleTask('workout')">
-                    <span class="icon">💪</span>운동 완료
-                </button>
-                <button class="check-btn" id="btn-pill" onclick="toggleTask('pill')">
-                    <span class="icon">💊</span>영양제 복용
-                </button>
-                <button class="check-btn" id="btn-water" onclick="toggleTask('water')">
-                    <span class="icon">💧</span>물/저탄수
-                </button>
-                <button class="check-btn" id="btn-alcohol" onclick="toggleTask('alcohol')">
-                    <span class="icon">🍷</span>절주 완료
-                </button>
+                <button class="check-btn" id="btn-workout" onclick="toggleTask('workout')"><span class="icon">💪</span>운동 완료</button>
+                <button class="check-btn" id="btn-pill" onclick="toggleTask('pill')"><span class="icon">💊</span>영양제 복용</button>
+                <button class="check-btn" id="btn-water" onclick="toggleTask('water')"><span class="icon">💧</span>물/저탄수</button>
+                <button class="check-btn" id="btn-alcohol" onclick="toggleTask('alcohol')"><span class="icon">🍷</span>절주 완료</button>
             </div>
         </div>
-
-        <!-- 주간 기록 뷰 -->
         <div class="section-card">
             <h2 class="section-title">주간 기록 <span class="date-range" style="font-size:11px;">(요일을 터치해 수정)</span></h2>
             <div class="week-view" id="weekViewContainer"></div>
         </div>
-
-        <!-- 한 줄 메모 -->
         <div class="section-card">
             <h2 class="section-title">한 줄 메모</h2>
-            <textarea id="memoInput" class="memo-input" placeholder="이날의 특이사항이나 체중 등을 기록해보세요." oninput="saveMemo()"></textarea>
+            <textarea id="memoInput" class="memo-input" placeholder="이날의 특이사항이나 체중 등을 기록해보세요." onblur="saveMemo()"></textarea>
         </div>
     </div>
 
     <!-- 탭 2: 월간 달력 및 통계 -->
     <div id="tab-monthly" class="tab-content">
-        <!-- 달력 -->
         <div class="section-card">
             <div class="calendar-header">
                 <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
@@ -185,51 +104,31 @@
                 <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
             </div>
             <div class="calendar-grid" id="calendarHeader">
-                <div class="cal-day-name">일</div><div class="cal-day-name">월</div><div class="cal-day-name">화</div>
-                <div class="cal-day-name">수</div><div class="cal-day-name">목</div><div class="cal-day-name">금</div><div class="cal-day-name">토</div>
+                <div class="cal-day-name">일</div><div class="cal-day-name">월</div><div class="cal-day-name">화</div><div class="cal-day-name">수</div><div class="cal-day-name">목</div><div class="cal-day-name">금</div><div class="cal-day-name">토</div>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
-
-        <div class="section-card">
-            <h2 class="section-title">월간 누적 달성률 <span class="date-range" id="label-monthly"></span></h2>
-            <div id="stat-monthly"></div>
-        </div>
-        <div class="section-card">
-            <h2 class="section-title">분기 누적 달성률 <span class="date-range" id="label-quarterly"></span></h2>
-            <div id="stat-quarterly"></div>
-        </div>
-        <div class="section-card">
-            <h2 class="section-title">반기 누적 달성률 <span class="date-range" id="label-halfyearly"></span></h2>
-            <div id="stat-halfyearly"></div>
-        </div>
-        <div class="section-card">
-            <h2 class="section-title">올해 누적 달성률 <span class="date-range" id="label-yearly"></span></h2>
-            <div id="stat-yearly"></div>
-        </div>
-        <div class="section-card">
-            <h2 class="section-title">연도별 비교 <span class="date-range">작년 vs 올해</span></h2>
-            <div id="stat-yoy"></div>
-        </div>
+        <div class="section-card"><h2 class="section-title">월간 누적 달성률 <span class="date-range" id="label-monthly"></span></h2><div id="stat-monthly"></div></div>
+        <div class="section-card"><h2 class="section-title">분기 누적 달성률 <span class="date-range" id="label-quarterly"></span></h2><div id="stat-quarterly"></div></div>
+        <div class="section-card"><h2 class="section-title">반기 누적 달성률 <span class="date-range" id="label-halfyearly"></span></h2><div id="stat-halfyearly"></div></div>
+        <div class="section-card"><h2 class="section-title">올해 누적 달성률 <span class="date-range" id="label-yearly"></span></h2><div id="stat-yearly"></div></div>
+        <div class="section-card"><h2 class="section-title">연도별 비교 <span class="date-range">작년 vs 올해</span></h2><div id="stat-yoy"></div></div>
     </div>
 
     <!-- 하단 네비게이션 -->
     <div class="bottom-nav">
-        <div class="nav-item active" id="nav-weekly" onclick="switchTab('weekly')">
-            <span class="nav-icon">📅</span>주간 체크
-        </div>
-        <div class="nav-item" id="nav-monthly" onclick="switchTab('monthly')">
-            <span class="nav-icon">📊</span>월간 & 통계
-        </div>
+        <div class="nav-item active" id="nav-weekly" onclick="switchTab('weekly')"><span class="nav-icon">📅</span>주간 체크</div>
+        <div class="nav-item" id="nav-monthly" onclick="switchTab('monthly')"><span class="nav-icon">📊</span>월간 & 통계</div>
     </div>
 
 <script>
+    // 전달해주신 구글 웹 앱 URL이 아래에 반영되었습니다.
+    const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwBWXQaseq8NLRHrgt5kTWLcOLQaCe-EzDVqEnrFDyr8MN6Tbe9pFjCOe3jjdVMxo41/exec";
+
     const systemToday = new Date();
     const todayStr = getLocalIsoDate(systemToday);
-    
     let activeDate = new Date();
     let activeDateStr = getLocalIsoDate(activeDate);
-
     let viewYear = systemToday.getFullYear();
     let viewMonth = systemToday.getMonth();
     
@@ -239,28 +138,21 @@
 
     let db = JSON.parse(localStorage.getItem('routineDB')) || {};
     
-    // 데이터베이스 구조에 memo 추가
     function initDB(dateStr) {
         if (!db[dateStr]) {
             db[dateStr] = { workout: false, pill: false, water: false, alcohol: false, memo: "" };
         } else if (db[dateStr].memo === undefined) {
-            db[dateStr].memo = ""; // 기존 사용자 호환성 유지
+            db[dateStr].memo = ""; 
         }
     }
     
     initDB(todayStr);
     initDB(activeDateStr);
 
-    function getLocalIsoDate(dateObj) {
-        return dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
-    }
-    function formatDate(dateObj) {
-        return `${dateObj.getMonth() + 1}.${dateObj.getDate()}`;
-    }
+    function getLocalIsoDate(dateObj) { return dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0'); }
+    function formatDate(dateObj) { return `${dateObj.getMonth() + 1}.${dateObj.getDate()}`; }
 
-    function init() {
-        renderAll();
-    }
+    function init() { renderAll(); }
 
     function selectDate(dStr) {
         const parts = dStr.split('-');
@@ -284,37 +176,47 @@
         renderAll();
     }
 
+    function sendToGoogleSheet() {
+        if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") return; 
+        
+        const currentData = db[activeDateStr];
+        fetch(GOOGLE_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                date: activeDateStr,
+                workout: currentData.workout,
+                pill: currentData.pill,
+                water: currentData.water,
+                alcohol: currentData.alcohol,
+                memo: currentData.memo || ""
+            })
+        }).catch(e => console.log('Backup error', e));
+    }
+
     function toggleTask(task) {
         db[activeDateStr][task] = !db[activeDateStr][task];
         localStorage.setItem('routineDB', JSON.stringify(db));
         renderAll();
+        sendToGoogleSheet(); 
     }
 
-    // 메모 실시간 저장 함수
     function saveMemo() {
         const memoValue = document.getElementById('memoInput').value;
         db[activeDateStr].memo = memoValue;
         localStorage.setItem('routineDB', JSON.stringify(db));
+        renderAll();
+        sendToGoogleSheet(); 
     }
 
-    function renderAll() {
-        renderHeader();
-        renderMainButtons();
-        renderWeekView();
-        renderMemo();
-        renderCalendar();
-        renderStats();
-    }
+    function renderAll() { renderHeader(); renderMainButtons(); renderWeekView(); renderMemo(); renderCalendar(); renderStats(); }
 
     function renderHeader() {
         const isToday = activeDateStr === todayStr;
         const todayMark = isToday ? ' <span style="color:var(--primary-color); font-size:16px;">(오늘)</span>' : '';
         document.getElementById('dateDisplay').innerHTML = `${activeDate.getFullYear()}년 ${activeDate.getMonth() + 1}월 ${activeDate.getDate()}일${todayMark}`;
-        
         const firstDayOfMonth = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1);
         const weekNum = Math.ceil((activeDate.getDate() + firstDayOfMonth.getDay()) / 7);
         document.getElementById('weekDisplay').innerText = `${activeDate.getMonth() + 1}월 ${weekNum}주차`;
-
         document.getElementById('btnReturnToday').style.display = isToday ? 'none' : 'block';
     }
 
@@ -329,68 +231,45 @@
         const container = document.getElementById('weekViewContainer');
         container.innerHTML = ''; 
         const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-        
         let startOfWeek = new Date(activeDate);
         startOfWeek.setDate(activeDate.getDate() - activeDate.getDay() + (activeDate.getDay() === 0 ? -6 : 1)); 
-
         for (let i = 0; i < 7; i++) {
             let tDate = new Date(startOfWeek);
             tDate.setDate(startOfWeek.getDate() + i);
             let dStr = getLocalIsoDate(tDate);
-            
             let isSelected = dStr === activeDateStr ? 'selected' : '';
             let isSystemToday = dStr === todayStr ? 'today' : '';
-
-            let html = `<div class="day-col ${isSelected}" onclick="selectDate('${dStr}')">
-                <span class="day-name ${isSystemToday}">${dayNames[tDate.getDay()]}</span>
-                <div class="icon-grid">`;
-            
+            let html = `<div class="day-col ${isSelected}" onclick="selectDate('${dStr}')"><span class="day-name ${isSystemToday}">${dayNames[tDate.getDay()]}</span><div class="icon-grid">`;
             tasks.forEach(task => {
                 let isActive = (db[dStr] && db[dStr][task]) ? 'active' : 'inactive';
                 html += `<div class="mini-icon ${isActive}">${taskEmojis[task]}</div>`;
             });
-            
             html += `</div></div>`;
             container.innerHTML += html;
         }
     }
 
-    // 메모 필드 렌더링
-    function renderMemo() {
-        document.getElementById('memoInput').value = db[activeDateStr].memo || "";
-    }
+    function renderMemo() { document.getElementById('memoInput').value = db[activeDateStr].memo || ""; }
 
     function renderCalendar() {
         document.getElementById('currentMonthDisplay').innerText = `${viewYear}년 ${viewMonth + 1}월`;
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = '';
-
         const firstDate = new Date(viewYear, viewMonth, 1);
         const lastDate = new Date(viewYear, viewMonth + 1, 0);
-        
-        for (let i = 0; i < firstDate.getDay(); i++) {
-            grid.innerHTML += `<div></div>`;
-        }
-
+        for (let i = 0; i < firstDate.getDay(); i++) { grid.innerHTML += `<div></div>`; }
         for (let day = 1; day <= lastDate.getDate(); day++) {
             let tDate = new Date(viewYear, viewMonth, day);
             let dStr = getLocalIsoDate(tDate);
             let isTodayClass = (dStr === todayStr) ? 'today' : '';
-            
-            let html = `<div class="cal-cell ${isTodayClass}">
-                <span class="cal-date">${day}</span>
-                <div class="icon-grid" style="padding:4px; gap:2px; border-radius:6px; background-color:transparent;">`;
-            
+            let html = `<div class="cal-cell ${isTodayClass}"><span class="cal-date">${day}</span><div class="icon-grid" style="padding:4px; gap:2px; border-radius:6px; background-color:transparent;">`;
             tasks.forEach(task => {
                 let isActive = (db[dStr] && db[dStr][task]) ? 'active' : 'inactive';
                 html += `<div class="mini-icon ${isActive}" style="font-size:10px; width:12px; height:12px;">${taskEmojis[task]}</div>`;
             });
-            
-            // 달력에도 메모가 있는 날은 작게 표시(선택사항)
-            if (db[dStr] && db[dStr].memo) {
+            if (db[dStr] && db[dStr].memo && db[dStr].memo.trim() !== "") {
                 html += `<div style="width:4px; height:4px; background-color:var(--text-sub); border-radius:50%; margin-top:2px;"></div>`;
             }
-            
             html += `</div></div>`;
             grid.innerHTML += html;
         }
@@ -410,13 +289,10 @@
         iter.setHours(0,0,0,0);
         let end = new Date(endDate);
         end.setHours(0,0,0,0);
-
         while (iter <= end) {
             days++; 
             let dStr = getLocalIsoDate(iter);
-            if (db[dStr]) {
-                tasks.forEach(t => { if (db[dStr][t]) stats[t]++; });
-            }
+            if (db[dStr]) { tasks.forEach(t => { if (db[dStr][t]) stats[t]++; }); }
             iter.setDate(iter.getDate() + 1);
         }
         return { days, stats };
@@ -426,17 +302,7 @@
         let html = '';
         tasks.forEach(task => {
             let pct = totalDays > 0 ? Math.round((stats[task] / totalDays) * 100) : 0;
-            html += `
-                <div class="stat-row">
-                    <div class="stat-label">
-                        <span>${taskEmojis[task]} ${taskNames[task]}</span>
-                        <span>${pct}% (${stats[task]}/${totalDays}일)</span>
-                    </div>
-                    <div class="progress-bg">
-                        <div class="progress-fill" style="width: ${pct}%;"></div>
-                    </div>
-                </div>
-            `;
+            html += `<div class="stat-row"><div class="stat-label"><span>${taskEmojis[task]} ${taskNames[task]}</span><span>${pct}% (${stats[task]}/${totalDays}일)</span></div><div class="progress-bg"><div class="progress-fill" style="width: ${pct}%;"></div></div></div>`;
         });
         return html;
     }
@@ -481,27 +347,7 @@
             let lastPct = lastYData.days > 0 ? Math.round((lastYData.stats[task] / lastYData.days) * 100) : 0;
             let diff = thisPct - lastPct;
             let diffStr = diff >= 0 ? `<span style="color:var(--primary-color);">▲ ${diff}%</span>` : `<span style="color:#FF3B30;">▼ ${Math.abs(diff)}%</span>`;
-
-            yoyHtml += `
-                <div class="stat-row" style="margin-bottom: 20px;">
-                    <div class="stat-label" style="margin-bottom: 8px;">
-                        <span>${taskEmojis[task]} ${taskNames[task]}</span>
-                        <span>작년 ${lastPct}% ➔ <strong>올해 ${thisPct}%</strong> (${diffStr})</span>
-                    </div>
-                    <div class="yoy-bar-container">
-                        <span class="yoy-label">작년</span>
-                        <div class="progress-bg" style="flex:1; height:6px;">
-                            <div class="progress-fill" style="width: ${lastPct}%; background-color: var(--text-sub);"></div>
-                        </div>
-                    </div>
-                    <div class="yoy-bar-container">
-                        <span class="yoy-label">올해</span>
-                        <div class="progress-bg" style="flex:1; height:6px;">
-                            <div class="progress-fill" style="width: ${thisPct}%;"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            yoyHtml += `<div class="stat-row" style="margin-bottom: 20px;"><div class="stat-label" style="margin-bottom: 8px;"><span>${taskEmojis[task]} ${taskNames[task]}</span><span>작년 ${lastPct}% ➔ <strong>올해 ${thisPct}%</strong> (${diffStr})</span></div><div class="yoy-bar-container"><span class="yoy-label">작년</span><div class="progress-bg" style="flex:1; height:6px;"><div class="progress-fill" style="width: ${lastPct}%; background-color: var(--text-sub);"></div></div></div><div class="yoy-bar-container"><span class="yoy-label">올해</span><div class="progress-bg" style="flex:1; height:6px;"><div class="progress-fill" style="width: ${thisPct}%;"></div></div></div></div>`;
         });
         document.getElementById('stat-yoy').innerHTML = yoyHtml;
     }
@@ -509,7 +355,6 @@
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        
         document.getElementById(`tab-${tabId}`).classList.add('active');
         document.getElementById(`nav-${tabId}`).classList.add('active');
         window.scrollTo(0, 0); 
