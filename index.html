@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>My Daily Routine</title>
+    <title>나의 루틴</title>
+    <meta name="apple-mobile-web-app-title" content="나의 루틴">
     
-    <!-- iOS 전용 네이티브 앱 아이콘 -->
-    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/apple-fitness.png">
-    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/192/apple-fitness.png">
+    <!-- 📱 저만의 루틴 (미니멀 프리미엄 운동 테마 고화질 아이콘) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=512&h=512&q=80">
+    <link rel="icon" type="image/png" href="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=512&h=512&q=80">
 
     <style>
         * {
@@ -37,7 +38,7 @@
         .header { text-align: center; margin-bottom: 20px; position: relative; }
         .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; }
         
-        /* 연속 달성 스트릭 배지 */
+        /* 운동 연속 달성 스트릭 배지 */
         .streak-badge {
             display: inline-flex;
             align-items: center;
@@ -46,7 +47,7 @@
             color: #FF9500;
             font-size: 13px;
             font-weight: 700;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             margin-bottom: 8px;
         }
@@ -113,6 +114,41 @@
         .nav-item { flex: 1; padding: 12px 0; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-sub); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .nav-item.active { color: var(--primary-color); }
         .nav-icon { font-size: 20px; }
+
+        /* 🎁 달성 셀프 보상 팝업 모달 */
+        .reward-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            padding: 24px;
+        }
+        .reward-overlay.active { display: flex; }
+        .reward-card {
+            background: #FFFFFF; width: 100%; max-width: 330px;
+            border-radius: 24px; padding: 26px 20px; text-align: center;
+            box-shadow: 0 16px 36px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .reward-badge {
+            display: inline-block; background: #FFF4E5; color: #FF9500;
+            font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; margin-bottom: 12px;
+        }
+        .reward-title { font-size: 19px; font-weight: 800; margin: 0 0 8px 0; color: var(--text-main); }
+        .reward-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 18px; line-height: 1.4; }
+        .reward-box {
+            background: #F9F9FB; border: 1.5px dashed #D1D1D6; border-radius: 16px;
+            padding: 16px 12px; margin-bottom: 20px;
+        }
+        .reward-name { font-size: 16px; font-weight: 700; color: #1C1C1E; line-height: 1.4; }
+        .reward-btn {
+            width: 100%; background: var(--primary-color); color: white; border: none;
+            padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -174,6 +210,20 @@
         </div>
     </div>
 
+    <!-- 🎁 보상 팝업 모달 -->
+    <div class="reward-overlay" id="rewardModal">
+        <div class="reward-card">
+            <div class="reward-badge" id="rewardBadgeText">🎉 1주일 연속 달성!</div>
+            <h3 class="reward-title" id="rewardTitleText">대단합니다! 목표 완수</h3>
+            <div class="reward-desc" id="rewardDescText">루틴을 꾸준히 지켜낸 나 자신에게<br>기분 좋은 보상을 선물하세요.</div>
+            <div class="reward-box">
+                <div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">오늘의 셀프 보상</div>
+                <div class="reward-name" id="rewardItemText">🍷 좋은 와인 한 잔과 여유로운 저녁</div>
+            </div>
+            <button class="reward-btn" onclick="closeRewardModal()">보상 즐겁게 챙기기</button>
+        </div>
+    </div>
+
     <!-- 하단 네비게이션 -->
     <div class="bottom-nav">
         <div class="nav-item active" id="nav-weekly" onclick="switchTab('weekly')"><span class="nav-icon">📅</span>주간 체크</div>
@@ -195,6 +245,17 @@
     const taskEmojis = { workout: '💪', pill: '💊', water: '💧', alcohol: '🍷' };
     const taskNames = { workout: '일일 운동', pill: '영양제 복용', water: '물/저탄수 식단', alcohol: '소주/와인 절주' };
 
+    // 랜덤 보상 목록 풀
+    const rewardList = [
+        "🍷 아껴둔 좋은 와인 한 병과 여유로운 밤",
+        "🥩 예약 곤란 맛집 탐방권 (나만의 치팅데이)",
+        "☕ 나만을 위한 온전한 반차 & 꿀같은 낮잠",
+        "✈️ 주말 훌쩍 떠나는 근교 힐링 여행권",
+        "⛳ 주말 여유로운 스크린/필드 라운딩",
+        "💆 하루의 피로를 녹여주는 최고급 사우나·스파",
+        "🎧 좋아하는 음악 들으며 카페에서 보내는 자유시간"
+    ];
+
     let db = JSON.parse(localStorage.getItem('routineDB')) || {};
     
     function initDB(dateStr) {
@@ -214,23 +275,21 @@
         return `${dateObj.getMonth() + 1}.${dateObj.getDate()}`; 
     }
 
-    // ⚡ 스트릭(연속 실천일) 계산 (0.0001초 소요)
-    function calculateStreak() {
+    // ⚡ 특정 항목별 연속 달성일(스트릭) 범용 계산 함수
+    function calculateTaskStreak(taskName) {
         let streak = 0;
         let checkDate = new Date(systemToday);
         
-        // 오늘 달성 여부 확인
         let dStr = getLocalIsoDate(checkDate);
-        let hasDoneToday = db[dStr] && (db[dStr].workout || db[dStr].pill || db[dStr].water || db[dStr].alcohol);
+        let hasDoneToday = db[dStr] && db[dStr][taskName];
         
         if (!hasDoneToday) {
-            // 오늘은 아직 안 했더라도 어제까지 했으면 스트릭 유지
             checkDate.setDate(checkDate.getDate() - 1);
         }
 
         while (true) {
             let curStr = getLocalIsoDate(checkDate);
-            if (db[curStr] && (db[curStr].workout || db[curStr].pill || db[curStr].water || db[curStr].alcohol)) {
+            if (db[curStr] && db[curStr][taskName]) {
                 streak++;
                 checkDate.setDate(checkDate.getDate() - 1);
             } else {
@@ -238,6 +297,48 @@
             }
         }
         return streak;
+    }
+
+    // 🎁 [수정 핵심: OR 조건 적용] 운동 or 절주 중 하나라도 7일 또는 30일 달성 시 보상 트리거
+    function checkRewardMilestone() {
+        const workoutStreak = calculateTaskStreak('workout');
+        const alcoholStreak = calculateTaskStreak('alcohol');
+
+        // 1. 운동 연속 달성 체크 (7일 또는 30일)
+        if (workoutStreak === 7 || workoutStreak === 30) {
+            const key = `reward_workout_${workoutStreak}_${todayStr}`;
+            if (!localStorage.getItem(key)) {
+                localStorage.setItem(key, "true");
+                showRewardPopup('운동', workoutStreak);
+                return;
+            }
+        }
+
+        // 2. 절주 연속 달성 체크 (7일 또는 30일)
+        if (alcoholStreak === 7 || alcoholStreak === 30) {
+            const key = `reward_alcohol_${alcoholStreak}_${todayStr}`;
+            if (!localStorage.getItem(key)) {
+                localStorage.setItem(key, "true");
+                showRewardPopup('절주', alcoholStreak);
+                return;
+            }
+        }
+    }
+
+    function showRewardPopup(typeName, days) {
+        const periodText = (days === 7) ? "1주일" : "1달(30일)";
+        const badgeText = `🎉 ${typeName} ${periodText} 연속 달성!`;
+        const randomReward = rewardList[Math.floor(Math.random() * rewardList.length)];
+
+        document.getElementById('rewardBadgeText').innerText = badgeText;
+        document.getElementById('rewardTitleText').innerText = `${typeName} 목표 완수를 축하합니다!`;
+        document.getElementById('rewardDescText').innerHTML = `${typeName} 루틴을 꾸준히 지켜낸 나 자신에게<br>기분 좋은 보상을 선물하세요.`;
+        document.getElementById('rewardItemText').innerText = randomReward;
+        document.getElementById('rewardModal').classList.add('active');
+    }
+
+    function closeRewardModal() {
+        document.getElementById('rewardModal').classList.remove('active');
     }
 
     // 백그라운드 동기화 (Debounce)
@@ -305,6 +406,7 @@
         renderMainButtons();
         renderWeekView();
         renderMemo();
+        checkRewardMilestone();
     }
 
     function selectDate(dStr) {
@@ -347,8 +449,14 @@
         
         document.getElementById(`btn-${task}`).classList.toggle('active', db[activeDateStr][task]);
         renderWeekView();
-        renderHeader(); // 스트릭 즉시 반영
+        renderHeader(); // 상단 운동 스트릭 배지 즉시 갱신
         isMonthlyDirty = true;
+        
+        // 운동 또는 절주를 체크했을 때 각자의 마일스톤 달성 여부 확인
+        if (task === 'workout' || task === 'alcohol') {
+            checkRewardMilestone();
+        }
+
         queueSync(activeDateStr);
     }
 
@@ -370,12 +478,12 @@
         document.getElementById('weekDisplay').innerText = `${activeDate.getMonth() + 1}월 ${weekNum}주차`;
         document.getElementById('btnReturnToday').style.display = isToday ? 'none' : 'block';
 
-        // 스트릭 배지 렌더링
-        const streak = calculateStreak();
+        // 상단 배지는 운동 단독 스트릭 표기 유지
+        const streak = calculateTaskStreak('workout');
         const streakEl = document.getElementById('streakBadge');
         if (streak > 0) {
             streakEl.style.display = 'inline-flex';
-            streakEl.innerHTML = `🔥 ${streak}일 연속 실천 중`;
+            streakEl.innerHTML = `🔥 운동 ${streak}일 연속 실천 중`;
         } else {
             streakEl.style.display = 'none';
         }
