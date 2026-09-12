@@ -8,7 +8,6 @@
     <title>나의 루틴</title>
     <meta name="apple-mobile-web-app-title" content="나의 루틴">
     
-    <!-- 📱 나의 루틴 데일리 웰니스 밸런스 아이콘 -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=512&h=512&q=80">
     <link rel="icon" type="image/png" href="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=512&h=512&q=80">
 
@@ -36,7 +35,6 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* 🔄 당겨서 새로고침 인디케이터 */
         .pull-refresh-indicator {
             position: fixed;
             top: env(safe-area-inset-top, 0px);
@@ -78,7 +76,6 @@
         .week-nav-text { font-size: 14px; color: var(--text-sub); font-weight: 500; min-width: 70px; }
         .return-today { position: absolute; right: 0; top: 0; font-size: 12px; color: var(--primary-color); font-weight: 600; padding: 6px; cursor: pointer; display: none; }
         
-        /* 카드 좌우 여백 최적화 (20px -> 12px) */
         .section-card { 
             background-color: var(--card-bg); 
             border-radius: 20px; 
@@ -104,7 +101,6 @@
         .check-btn span.icon { font-size: 28px; }
         .check-btn.active { background-color: var(--primary-color); color: white; transform: scale(0.97); }
 
-        /* 🗓️ 7일 균등 정렬 그리드 (양측 간격 축소 및 시원한 비율) */
         .week-view { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
@@ -126,7 +122,6 @@
             width: 100%;
         }
         .day-col.selected { border-color: var(--primary-color); background-color: rgba(52, 199, 89, 0.08); }
-        /* 요일 글자 크기 확대 (12px -> 14px 볼드) */
         .day-name { font-size: 14px; color: var(--text-sub); font-weight: 700; }
         .day-name.today { color: var(--primary-color); font-weight: 800; }
         
@@ -149,7 +144,6 @@
         .memo-input { width: 100%; box-sizing: border-box; background-color: var(--gray-light); border: none; border-radius: 12px; padding: 14px; font-size: 14px; color: var(--text-main); font-family: inherit; resize: none; height: 72px; outline: none; transition: box-shadow 0.2s; }
         .memo-input:focus { box-shadow: 0 0 0 2px var(--primary-color); }
 
-        /* 🏃 검은 여백 없는 감각적인 운동 인증 사진 갤러리 */
         .photo-gallery-wrapper { padding: 0 4px; }
         .photo-gallery-scroll {
             display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px 2px;
@@ -161,7 +155,6 @@
             border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             cursor: pointer;
         }
-        /* 애플워치 세로 비율에 꽉 찬 커버 핏 (검은 여백 제거) */
         .photo-card-img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
         .photo-del-chip {
             position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
@@ -212,7 +205,6 @@
         .nav-item.active { color: var(--primary-color); }
         .nav-icon { font-size: 20px; }
 
-        /* 🎁 달성 셀프 보상 팝업 모달 */
         .reward-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -236,7 +228,6 @@
             box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
         }
 
-        /* 🔍 사진 라이트박스 */
         .lightbox {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.92);
             display: none; align-items: center; justify-content: center; z-index: 2000;
@@ -250,7 +241,6 @@
     </style>
 </head>
 <body>
-    <!-- 🔄 당겨서 새로고침 UI -->
     <div class="pull-refresh-indicator" id="pullIndicator">
         <span class="pull-icon">↓</span>
         <span id="pullText">당겨서 새로고침</span>
@@ -267,7 +257,6 @@
         <div id="btnReturnToday" class="return-today" onclick="returnToToday()">오늘로 복귀</div>
     </div>
 
-    <!-- 탭 1: 주간 요약 -->
     <div id="tab-weekly" class="tab-content active">
         <div class="section-card">
             <h2 class="section-title">목표 달성 기록</h2>
@@ -284,7 +273,6 @@
             <div class="week-view" id="weekViewContainer"></div>
         </div>
 
-        <!-- 🏃 운동 인증 사진 영역 (최대 5장 갤러리) -->
         <div class="section-card">
             <h2 class="section-title">
                 <span>🏃 운동 인증 사진</span>
@@ -296,11 +284,10 @@
 
         <div class="section-card">
             <h2 class="section-title">한 줄 메모</h2>
-            <textarea id="memoInput" class="memo-input" placeholder="이날의 특이사항이나 체중 등을 기록해보세요." oninput="onMemoInput()" onblur="flushSync()"></textarea>
+            <textarea id="memoInput" class="memo-input" placeholder="이날의 특이사항이나 체중 등을 기록해보세요." oninput="onMemoInput()"></textarea>
         </div>
     </div>
 
-    <!-- 탭 2: 월간 달력 및 통계 -->
     <div id="tab-monthly" class="tab-content">
         <div class="section-card">
             <div class="calendar-header">
@@ -325,7 +312,6 @@
         </div>
     </div>
 
-    <!-- 🎁 보상 팝업 모달 -->
     <div class="reward-overlay" id="rewardModal">
         <div class="reward-card">
             <div class="reward-badge" id="rewardBadgeText">🎉 1주일 연속 달성!</div>
@@ -339,13 +325,11 @@
         </div>
     </div>
 
-    <!-- 🔍 사진 라이트박스 -->
     <div class="lightbox" id="routineLightbox" onclick="closeRoutineLightbox()">
         <button class="lightbox-close">✕</button>
         <div id="routineLightboxContent" style="display:flex; justify-content:center; align-items:center;"></div>
     </div>
 
-    <!-- 하단 네비게이션 -->
     <div class="bottom-nav">
         <div class="nav-item active" id="nav-weekly" onclick="switchTab('weekly')"><span class="nav-icon">📅</span>주간 체크</div>
         <div class="nav-item" id="nav-monthly" onclick="switchTab('monthly')"><span class="nav-icon">📊</span>월간 & 통계</div>
@@ -508,7 +492,7 @@
             if (ind.classList.contains('ready')) {
                 ind.classList.remove('ready', 'pulling');
                 ind.classList.add('refreshing');
-                txt.innerText = "구글 시트 동기화 중...";
+                txt.innerText = "데이터 동기화 중...";
 
                 syncFromCloud(() => {
                     txt.innerText = "동기화 완료 ✔";
@@ -532,7 +516,7 @@
         }
     }
 
-    // 🔄 클라우드 데이터 동기화 (로컬에 저장된 사진 절대 보호)
+    // 🔄 클라우드 데이터 동기화 (폰에 있는 체크값 우선 보호)
     function syncFromCloud(callback) {
         if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") {
             if (callback) callback();
@@ -544,32 +528,22 @@
             .then(data => {
                 Object.keys(data).forEach(dateKey => {
                     const row = data[dateKey];
-                    let cloudPhotos = [];
-                    if (row.workoutPhoto) {
-                        if (row.workoutPhoto.startsWith('[')) {
-                            try { cloudPhotos = JSON.parse(row.workoutPhoto); } 
-                            catch(e) { cloudPhotos = [row.workoutPhoto]; }
-                        } else {
-                            cloudPhotos = [row.workoutPhoto];
-                        }
-                    }
-
                     if (!db[dateKey]) {
-                        db[dateKey] = row;
-                        db[dateKey].workoutPhotos = cloudPhotos;
+                        db[dateKey] = {
+                            workout: Boolean(row.workout),
+                            pill: Boolean(row.pill),
+                            water: Boolean(row.water),
+                            alcohol: Boolean(row.alcohol),
+                            memo: row.memo || "",
+                            workoutPhotos: []
+                        };
                     } else {
-                        // 체크 항목 및 메모 동기화
-                        db[dateKey].workout = row.workout;
-                        db[dateKey].pill = row.pill;
-                        db[dateKey].water = row.water;
-                        db[dateKey].alcohol = row.alcohol;
-                        if (row.memo) db[dateKey].memo = row.memo;
-                        
-                        // 🛡️ 사진 보호: 클라우드에 사진이 있을 때만 갱신 (로컬 사진 삭제 방지)
-                        if (cloudPhotos.length > 0) {
-                            db[dateKey].workoutPhotos = cloudPhotos;
-                            db[dateKey].workoutPhoto = row.workoutPhoto;
-                        }
+                        // 폰에서 오늘 체크한 값이 이미 true라면 클라우드의 0/false로 덮어쓰지 않음
+                        db[dateKey].workout = db[dateKey].workout || Boolean(row.workout);
+                        db[dateKey].pill = db[dateKey].pill || Boolean(row.pill);
+                        db[dateKey].water = db[dateKey].water || Boolean(row.water);
+                        db[dateKey].alcohol = db[dateKey].alcohol || Boolean(row.alcohol);
+                        if (row.memo && !db[dateKey].memo) db[dateKey].memo = row.memo;
                     }
                 });
 
@@ -587,34 +561,16 @@
                 if (callback) callback();
             })
             .catch(err => {
-                console.log("동기화 대기중:", err);
+                console.log("동기화 대기:", err);
                 if (callback) callback();
             });
     }
 
-    let syncTimer = null;
-    function queueSync(dateStr) {
+    // ⚡ [핵심 수정] 사진을 제외한 150바이트 초경량 데이터만 즉시 전송
+    function syncTasksImmediately(dateStr) {
         if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") return;
-        if (syncTimer) clearTimeout(syncTimer);
-        syncTimer = setTimeout(() => {
-            executeSync(dateStr);
-        }, 1200);
-    }
-
-    function flushSync() {
-        if (syncTimer) {
-            clearTimeout(syncTimer);
-            syncTimer = null;
-            executeSync(activeDateStr);
-        }
-    }
-
-    function executeSync(dateStr) {
         const currentData = db[dateStr];
         if (!currentData) return;
-
-        const photos = currentData.workoutPhotos || [];
-        const photoData = photos.length > 0 ? JSON.stringify(photos) : "";
 
         fetch(GOOGLE_APP_URL, {
             method: 'POST',
@@ -622,14 +578,26 @@
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
                 date: dateStr,
-                workout: !!currentData.workout,
-                pill: !!currentData.pill,
-                water: !!currentData.water,
-                alcohol: !!currentData.alcohol,
-                memo: currentData.memo || "",
-                workoutPhoto: photoData
+                workout: Boolean(currentData.workout),
+                pill: Boolean(currentData.pill),
+                water: Boolean(currentData.water),
+                alcohol: Boolean(currentData.alcohol),
+                memo: currentData.memo || ""
             })
         }).catch(e => console.log('Sync Error:', e));
+    }
+
+    let memoTimer = null;
+    function onMemoInput() {
+        const memoValue = document.getElementById('memoInput').value;
+        initDB(activeDateStr);
+        db[activeDateStr].memo = memoValue;
+        saveRoutineDB();
+        isMonthlyDirty = true;
+        if (memoTimer) clearTimeout(memoTimer);
+        memoTimer = setTimeout(() => {
+            syncTasksImmediately(activeDateStr);
+        }, 800);
     }
 
     function restoreFromGoogleSheet() {
@@ -691,7 +659,6 @@
                 photos.push(base64);
             }
             db[activeDateStr].workoutPhotos = photos;
-            db[activeDateStr].workoutPhoto = JSON.stringify(photos);
 
             if (!db[activeDateStr].workout) {
                 db[activeDateStr].workout = true;
@@ -702,7 +669,7 @@
             renderWorkoutPhoto();
             renderWeekView();
             isMonthlyDirty = true;
-            queueSync(activeDateStr);
+            syncTasksImmediately(activeDateStr);
         } catch (err) {
             alert('사진 처리 중 오류가 발생했습니다.');
         } finally {
@@ -716,14 +683,12 @@
         let photos = db[activeDateStr].workoutPhotos || [];
         photos.splice(idx, 1);
         db[activeDateStr].workoutPhotos = photos;
-        db[activeDateStr].workoutPhoto = photos.length > 0 ? JSON.stringify(photos) : "";
         saveRoutineDB();
         renderWorkoutPhoto();
         renderWeekView();
-        queueSync(activeDateStr);
+        syncTasksImmediately(activeDateStr);
     }
 
-    // 🏃 검은 여백 없는 감각적인 가로 스크롤 카드 렌더링
     function renderWorkoutPhoto() {
         const dateEl = document.getElementById('photoCardDate');
         if (dateEl) {
@@ -800,7 +765,6 @@
     }
 
     function selectDate(dStr) {
-        flushSync();
         const parts = dStr.split('-');
         activeDate = new Date(parts[0], parts[1] - 1, parts[2]);
         activeDateStr = dStr;
@@ -813,7 +777,6 @@
     }
 
     function changeWeek(offset) {
-        flushSync();
         activeDate.setDate(activeDate.getDate() + (offset * 7));
         activeDateStr = getLocalIsoDate(activeDate);
         initDB(activeDateStr);
@@ -825,7 +788,6 @@
     }
 
     function returnToToday() {
-        flushSync();
         activeDate = new Date();
         activeDateStr = getLocalIsoDate(activeDate);
         initDB(activeDateStr);
@@ -836,6 +798,7 @@
         renderMemo();
     }
 
+    // ⚡ [버튼 클릭 즉시 전송] 딜레이 제로 & 클라우드 직통 저장
     function toggleTask(task) {
         initDB(activeDateStr);
         db[activeDateStr][task] = !db[activeDateStr][task];
@@ -850,16 +813,8 @@
             checkRewardMilestone();
         }
 
-        queueSync(activeDateStr);
-    }
-
-    function onMemoInput() {
-        const memoValue = document.getElementById('memoInput').value;
-        initDB(activeDateStr);
-        db[activeDateStr].memo = memoValue;
-        saveRoutineDB();
-        isMonthlyDirty = true;
-        queueSync(activeDateStr);
+        // 지연 시간 없이 0.01초 만에 구글 시트로 즉시 전송
+        syncTasksImmediately(activeDateStr);
     }
 
     function renderHeader() {
@@ -889,7 +844,6 @@
         });
     }
 
-    // 🗓️ 7일 균등 정렬 주간 뷰 (14px 볼드 요일)
     function renderWeekView() {
         const container = document.getElementById('weekViewContainer');
         const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
@@ -1046,7 +1000,6 @@
     }
 
     function switchTab(tabId) {
-        flushSync();
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         
