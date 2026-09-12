@@ -297,7 +297,8 @@
     </div>
 
 <script>
-    const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwBWXQaseq8NLRHrgt5kTWLcOLQaCe-EzDVqEnrFDyr8MN6Tbe9pFjCOe3jjdVMxo41/exec";
+    // 🔗 새로 발급된 구글 웹앱 URL 적용 완료
+    const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwLmSLd9xZznwL_X1VUku8TRbk_yLGkv2TCZHKeT4l8CslnFhctX6v2zRLDqMJx9LsG/exec";
 
     const systemToday = new Date();
     const todayStr = getLocalIsoDate(systemToday);
@@ -591,7 +592,6 @@
             const base64 = await compressWorkoutImage(file);
             initDB(activeDateStr);
             db[activeDateStr].workoutPhoto = base64;
-            // 사진 등록 시 운동 완료도 함께 자동 체크
             if (!db[activeDateStr].workout) {
                 db[activeDateStr].workout = true;
                 document.getElementById('btn-workout').classList.add('active');
@@ -765,12 +765,11 @@
         });
     }
 
-    // 🗓️ [수정] 월간 달력과 동일하게 일요일부터 시작하는 7일 주간 뷰
+    // 🗓️ 월간 달력과 동일하게 일요일부터 시작하는 7일 주간 뷰
     function renderWeekView() {
         const container = document.getElementById('weekViewContainer');
         const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
         
-        // 해당 주간의 시작일(일요일) 계산
         let startOfWeek = new Date(activeDate);
         startOfWeek.setDate(activeDate.getDate() - activeDate.getDay());
         
