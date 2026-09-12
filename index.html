@@ -31,7 +31,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-color); 
             margin: 0; 
-            padding: calc(20px + env(safe-area-inset-top)) 16px 100px 16px; 
+            padding: calc(18px + env(safe-area-inset-top)) 14px 100px 14px; 
             color: var(--text-main); 
             -webkit-tap-highlight-color: transparent; 
         }
@@ -78,17 +78,22 @@
         .week-nav-text { font-size: 14px; color: var(--text-sub); font-weight: 500; min-width: 70px; }
         .return-today { position: absolute; right: 0; top: 0; font-size: 12px; color: var(--primary-color); font-weight: 600; padding: 6px; cursor: pointer; display: none; }
         
+        /* 카드 좌우 여백 최적화 (20px -> 12px) */
         .section-card { 
             background-color: var(--card-bg); 
             border-radius: 20px; 
-            padding: 20px 14px; 
-            margin-bottom: 20px; 
+            padding: 20px 10px; 
+            margin-bottom: 18px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.03); 
         }
-        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; margin-top: 0; display: flex; justify-content: space-between; align-items: baseline; }
+        .section-title { 
+            font-size: 16px; font-weight: 700; margin-bottom: 16px; margin-top: 0; 
+            padding: 0 4px;
+            display: flex; justify-content: space-between; align-items: baseline; 
+        }
         .date-range { font-size: 12px; font-weight: normal; color: var(--text-sub); }
         
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 2px; }
         .check-btn { 
             background-color: var(--gray-btn); border: none; border-radius: 16px; 
             padding: 16px 12px; font-size: 14px; font-weight: 600; color: var(--text-sub); 
@@ -99,11 +104,11 @@
         .check-btn span.icon { font-size: 28px; }
         .check-btn.active { background-color: var(--primary-color); color: white; transform: scale(0.97); }
 
-        /* 🗓️ 7일 균등 정렬 그리드 */
+        /* 🗓️ 7일 균등 정렬 그리드 (양측 간격 축소 및 시원한 비율) */
         .week-view { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
-            gap: 4px; 
+            gap: 2px; 
             width: 100%;
         }
         .day-col { 
@@ -113,23 +118,24 @@
             justify-content: flex-start;
             gap: 6px; 
             cursor: pointer; 
-            padding: 6px 1px; 
+            padding: 8px 1px; 
             border-radius: 12px; 
             transition: background-color 0.15s; 
             border: 2px solid transparent; 
             min-width: 0;
             width: 100%;
         }
-        .day-col.selected { border-color: var(--primary-color); background-color: rgba(52, 199, 89, 0.06); }
-        .day-name { font-size: 12px; color: var(--text-sub); font-weight: 500; }
-        .day-name.today { color: var(--primary-color); font-weight: 700; }
+        .day-col.selected { border-color: var(--primary-color); background-color: rgba(52, 199, 89, 0.08); }
+        /* 요일 글자 크기 확대 (12px -> 14px 볼드) */
+        .day-name { font-size: 14px; color: var(--text-sub); font-weight: 700; }
+        .day-name.today { color: var(--primary-color); font-weight: 800; }
         
         .icon-grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
             gap: 2px; 
             background-color: var(--gray-light); 
-            padding: 4px 3px; 
+            padding: 4px 2px; 
             border-radius: 9px; 
             pointer-events: none; 
             width: 100%;
@@ -143,19 +149,20 @@
         .memo-input { width: 100%; box-sizing: border-box; background-color: var(--gray-light); border: none; border-radius: 12px; padding: 14px; font-size: 14px; color: var(--text-main); font-family: inherit; resize: none; height: 72px; outline: none; transition: box-shadow 0.2s; }
         .memo-input:focus { box-shadow: 0 0 0 2px var(--primary-color); }
 
-        /* 🏃 운동 인증 사진 갤러리 (가로 스크롤 카드) */
-        .photo-gallery-wrapper { display: flex; flex-direction: column; gap: 10px; }
+        /* 🏃 검은 여백 없는 감각적인 운동 인증 사진 갤러리 */
+        .photo-gallery-wrapper { padding: 0 4px; }
         .photo-gallery-scroll {
-            display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px 2px;
+            display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px 2px;
             -webkit-overflow-scrolling: touch;
         }
         .photo-card-item {
-            position: relative; width: 120px; height: 165px; flex-shrink: 0;
-            border-radius: 14px; overflow: hidden; background-color: var(--gray-light);
-            border: 1px solid var(--gray-btn); box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            position: relative; width: 110px; height: 155px; flex-shrink: 0;
+            border-radius: 14px; overflow: hidden; background-color: var(--card-bg);
+            border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             cursor: pointer;
         }
-        .photo-card-img { width: 100%; height: 100%; object-fit: cover; }
+        /* 애플워치 세로 비율에 꽉 찬 커버 핏 (검은 여백 제거) */
+        .photo-card-img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
         .photo-del-chip {
             position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
             background: rgba(0, 0, 0, 0.6); color: white; border: none;
@@ -164,19 +171,19 @@
             backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
         }
         .photo-add-card {
-            width: 100px; height: 165px; flex-shrink: 0; border: 2px dashed var(--gray-btn);
+            width: 100px; height: 155px; flex-shrink: 0; border: 2px dashed var(--gray-btn);
             border-radius: 14px; display: flex; flex-direction: column; align-items: center;
             justify-content: center; gap: 6px; cursor: pointer; background-color: var(--gray-light);
         }
         .photo-add-card:active { background-color: var(--gray-btn); }
         .photo-empty-placeholder {
-            border: 2px dashed var(--gray-btn); border-radius: 16px; padding: 24px 16px;
+            border: 2px dashed var(--gray-btn); border-radius: 16px; padding: 26px 16px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 6px; cursor: pointer; background-color: var(--gray-light);
+            gap: 6px; cursor: pointer; background-color: var(--gray-light); margin: 0 4px;
         }
         .photo-empty-placeholder:active { background-color: var(--gray-btn); }
 
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; padding: 0 4px; }
         .calendar-nav-btn { background: none; border: none; font-size: 18px; color: var(--primary-color); cursor: pointer; padding: 4px 12px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .cal-day-name { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; }
@@ -277,7 +284,7 @@
             <div class="week-view" id="weekViewContainer"></div>
         </div>
 
-        <!-- 🏃 [개선] 운동 인증 사진 영역 (최대 5장 갤러리) -->
+        <!-- 🏃 운동 인증 사진 영역 (최대 5장 갤러리) -->
         <div class="section-card">
             <h2 class="section-title">
                 <span>🏃 운동 인증 사진</span>
@@ -521,18 +528,11 @@
         try {
             localStorage.setItem('routineDB', JSON.stringify(db));
         } catch (e) {
-            console.warn("로컬 용량 한도 대응: 오래된 인증 사진 정리");
-            const keys = Object.keys(db).sort();
-            if (keys.length > 20) {
-                for (let i = 0; i < keys.length - 20; i++) {
-                    if (db[keys[i]].workoutPhotos) db[keys[i]].workoutPhotos = [];
-                    if (db[keys[i]].workoutPhoto) db[keys[i]].workoutPhoto = "";
-                }
-                try { localStorage.setItem('routineDB', JSON.stringify(db)); } catch (err) {}
-            }
+            console.warn("로컬 용량 한도 대응");
         }
     }
 
+    // 🔄 클라우드 데이터 동기화 (로컬에 저장된 사진 절대 보호)
     function syncFromCloud(callback) {
         if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") {
             if (callback) callback();
@@ -544,19 +544,35 @@
             .then(data => {
                 Object.keys(data).forEach(dateKey => {
                     const row = data[dateKey];
-                    let photos = [];
+                    let cloudPhotos = [];
                     if (row.workoutPhoto) {
                         if (row.workoutPhoto.startsWith('[')) {
-                            try { photos = JSON.parse(row.workoutPhoto); } 
-                            catch(e) { photos = [row.workoutPhoto]; }
+                            try { cloudPhotos = JSON.parse(row.workoutPhoto); } 
+                            catch(e) { cloudPhotos = [row.workoutPhoto]; }
                         } else {
-                            photos = [row.workoutPhoto];
+                            cloudPhotos = [row.workoutPhoto];
                         }
                     }
-                    row.workoutPhotos = photos;
+
+                    if (!db[dateKey]) {
+                        db[dateKey] = row;
+                        db[dateKey].workoutPhotos = cloudPhotos;
+                    } else {
+                        // 체크 항목 및 메모 동기화
+                        db[dateKey].workout = row.workout;
+                        db[dateKey].pill = row.pill;
+                        db[dateKey].water = row.water;
+                        db[dateKey].alcohol = row.alcohol;
+                        if (row.memo) db[dateKey].memo = row.memo;
+                        
+                        // 🛡️ 사진 보호: 클라우드에 사진이 있을 때만 갱신 (로컬 사진 삭제 방지)
+                        if (cloudPhotos.length > 0) {
+                            db[dateKey].workoutPhotos = cloudPhotos;
+                            db[dateKey].workoutPhoto = row.workoutPhoto;
+                        }
+                    }
                 });
 
-                db = Object.assign({}, db, data);
                 saveRoutineDB();
                 initDB(activeDateStr);
                 renderHeader();
@@ -571,7 +587,7 @@
                 if (callback) callback();
             })
             .catch(err => {
-                console.log("동기화 오류:", err);
+                console.log("동기화 대기중:", err);
                 if (callback) callback();
             });
     }
@@ -630,7 +646,6 @@
         });
     }
 
-    // 🏃 사진 스마트 압축 (900px, JPEG 0.65)
     function compressWorkoutImage(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -657,7 +672,6 @@
         });
     }
 
-    // 🏃 여러 장 사진 업로드 처리 (최대 5장)
     async function handleWorkoutPhoto(event) {
         const files = Array.from(event.target.files || []);
         if (!files.length) return;
@@ -709,7 +723,7 @@
         queueSync(activeDateStr);
     }
 
-    // 🏃 검은 레터박스 없는 가로 스크롤 카드 갤러리 렌더링
+    // 🏃 검은 여백 없는 감각적인 가로 스크롤 카드 렌더링
     function renderWorkoutPhoto() {
         const dateEl = document.getElementById('photoCardDate');
         if (dateEl) {
@@ -733,7 +747,6 @@
                 `;
             });
 
-            // 5장 미만일 때 추가 카드 표시
             let addCardHtml = '';
             if (photos.length < 5) {
                 addCardHtml = `
@@ -757,7 +770,7 @@
             container.innerHTML = `
                 <div class="photo-empty-placeholder" onclick="document.getElementById('workoutPhotoInput').click()">
                     <span style="font-size: 26px;">⌚</span>
-                    <span style="font-weight: 600; font-size: 14px; color: var(--text-main);">애플워치 / 운동 인증 사진 등록 (최대 5장)</span>
+                    <span style="font-weight: 700; font-size: 14px; color: var(--text-main);">애플워치 / 운동 인증 사진 등록 (최대 5장)</span>
                     <span style="font-size: 12px; color: var(--text-sub);">터치하여 오늘의 운동 기록 캡처를 첨부하세요</span>
                 </div>
             `;
@@ -876,7 +889,7 @@
         });
     }
 
-    // 🗓️ 7일 대칭 주간 뷰 (일요일~토요일)
+    // 🗓️ 7일 균등 정렬 주간 뷰 (14px 볼드 요일)
     function renderWeekView() {
         const container = document.getElementById('weekViewContainer');
         const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
