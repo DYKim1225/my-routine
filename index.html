@@ -24,6 +24,7 @@
             --text-sub: #8E8E93;
             --gray-btn: #E5E5EA;
             --gray-light: #F2F2F7;
+            --line: #E5E5EA;
             --nav-bg: rgba(255, 255, 255, 0.9);
         }
         body { 
@@ -133,7 +134,7 @@
             padding: 4px 2px; 
             border-radius: 9px; 
             pointer-events: none; 
-            width: 100%;
+            width: 100%; 
             max-width: 38px;
             justify-items: center;
         }
@@ -361,23 +362,81 @@
     ];
 
     let db = JSON.parse(localStorage.getItem('routineDB')) || {};
-    
+
+    /* ==========================================================================
+       IndexedDB 사진 전용 스토리지 매니저 (로컬 5MB 한도 영구 해제)
+       ========================================================================== */
+    const IDB_NAME = 'MyRoutinePhotoDB';
+    const IDB_STORE = 'photos';
+
+    function getIDB() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(IDB_NAME, 1);
+            req.onupgradeneeded = (e) => {
+                const idb = e.target.result;
+                if (!idb.objectStoreNames.contains(IDB_STORE)) {
+                    idb.createObjectStore(IDB_STORE, { keyPath: 'date' });
+                }
+            };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async function idbGetPhotos(dateStr) {
+        try {
+            const idb = await getIDB();
+            return new Promise((resolve) => {
+                const tx = idb.transaction(IDB_STORE, 'readonly');
+                const req = tx.objectStore(IDB_STORE).get(dateStr);
+                req.onsuccess = () => resolve(req.result ? req.result.photos : []);
+                req.onerror = () => resolve([]);
+            });
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async function idbSavePhotos(dateStr, photosArray) {
+        try {
+            const idb = await getIDB();
+            return new Promise((resolve) => {
+                const tx = idb.transaction(IDB_STORE, 'readwrite');
+                tx.objectStore(IDB_STORE).put({ date: dateStr, photos: photosArray });
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => resolve(false);
+            });
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async function migrateLegacyPhotos() {
+        let changed = false;
+        for (let dStr in db) {
+            if (db[dStr].workoutPhotos && db[dStr].workoutPhotos.length > 0) {
+                const existing = await idbGetPhotos(dStr);
+                const merged = Array.from(new Set([...existing, ...db[dStr].workoutPhotos]));
+                await idbSavePhotos(dStr, merged);
+                db[dStr].photoCount = merged.length;
+                delete db[dStr].workoutPhotos;
+                if (db[dStr].workoutPhoto) delete db[dStr].workoutPhoto;
+                changed = true;
+            }
+        }
+        if (changed) saveRoutineDB();
+    }
+
     function initDB(dateStr) {
         if (!db[dateStr]) {
-            db[dateStr] = { workout: false, pill: false, water: false, alcohol: false, memo: "", workoutPhotos: [] };
+            db[dateStr] = { workout: false, pill: false, water: false, alcohol: false, memo: "", photoCount: 0, _lastModified: 0 };
         } else {
             if (db[dateStr].memo === undefined) db[dateStr].memo = "";
-            if (!Array.isArray(db[dateStr].workoutPhotos)) {
-                if (db[dateStr].workoutPhoto) {
-                    if (db[dateStr].workoutPhoto.startsWith('[')) {
-                        try { db[dateStr].workoutPhotos = JSON.parse(db[dateStr].workoutPhoto); } 
-                        catch(e) { db[dateStr].workoutPhotos = [db[dateStr].workoutPhoto]; }
-                    } else {
-                        db[dateStr].workoutPhotos = [db[dateStr].workoutPhoto];
-                    }
-                } else {
-                    db[dateStr].workoutPhotos = [];
-                }
+            if (db[dateStr].photoCount === undefined) db[dateStr].photoCount = 0;
+            if (db[dateStr]._lastModified === undefined) db[dateStr]._lastModified = 0;
+            if (db[dateStr].workoutPhotos) {
+                db[dateStr].photoCount = db[dateStr].workoutPhotos.length;
+                delete db[dateStr].workoutPhotos;
             }
         }
     }
@@ -512,11 +571,13 @@
         try {
             localStorage.setItem('routineDB', JSON.stringify(db));
         } catch (e) {
-            console.warn("로컬 용량 한도 대응");
+            console.warn("로컬 저장 오류:", e);
         }
     }
 
-    // 🔄 클라우드 데이터 동기화 (폰에 있는 체크값 우선 보호)
+    /* ==========================================================================
+       스마트 양방향 동기화 엔진 (체크 해제 정상 반영 & 15초 락)
+       ========================================================================== */
     function syncFromCloud(callback) {
         if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") {
             if (callback) callback();
@@ -525,30 +586,34 @@
         const cacheUrl = GOOGLE_APP_URL + (GOOGLE_APP_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
         fetch(cacheUrl, { cache: 'no-store' })
             .then(res => res.json())
-            .then(data => {
-                Object.keys(data).forEach(dateKey => {
+            .then(async data => {
+                const now = Date.now();
+                for (const dateKey of Object.keys(data)) {
                     const row = data[dateKey];
-                    if (!db[dateKey]) {
-                        db[dateKey] = {
-                            workout: Boolean(row.workout),
-                            pill: Boolean(row.pill),
-                            water: Boolean(row.water),
-                            alcohol: Boolean(row.alcohol),
-                            memo: row.memo || "",
-                            workoutPhotos: []
-                        };
-                    } else {
-                        // 폰에서 오늘 체크한 값이 이미 true라면 클라우드의 0/false로 덮어쓰지 않음
-                        db[dateKey].workout = db[dateKey].workout || Boolean(row.workout);
-                        db[dateKey].pill = db[dateKey].pill || Boolean(row.pill);
-                        db[dateKey].water = db[dateKey].water || Boolean(row.water);
-                        db[dateKey].alcohol = db[dateKey].alcohol || Boolean(row.alcohol);
-                        if (row.memo && !db[dateKey].memo) db[dateKey].memo = row.memo;
+                    initDB(dateKey);
+
+                    // 로컬에서 15초 이내에 조작된 데이터는 덮어쓰지 않고 보호
+                    if (db[dateKey]._lastModified && (now - db[dateKey]._lastModified < 15000)) {
+                        continue;
                     }
-                });
+
+                    // 최신 타임스탬프 기준으로 상태를 덮어씀 (체크 해제 완벽 지원)
+                    db[dateKey].workout = Boolean(row.workout);
+                    db[dateKey].pill = Boolean(row.pill);
+                    db[dateKey].water = Boolean(row.water);
+                    db[dateKey].alcohol = Boolean(row.alcohol);
+                    if (row.memo !== undefined) db[dateKey].memo = row.memo;
+                    db[dateKey]._lastModified = row.lastModified || 0;
+
+                    if (row.workoutPhotos && row.workoutPhotos.length > 0) {
+                        const localPhotos = await idbGetPhotos(dateKey);
+                        const mergedPhotos = Array.from(new Set([...localPhotos, ...row.workoutPhotos]));
+                        await idbSavePhotos(dateKey, mergedPhotos);
+                        db[dateKey].photoCount = mergedPhotos.length;
+                    }
+                }
 
                 saveRoutineDB();
-                initDB(activeDateStr);
                 renderHeader();
                 renderMainButtons();
                 renderWeekView();
@@ -566,7 +631,6 @@
             });
     }
 
-    // ⚡ [핵심 수정] 사진을 제외한 150바이트 초경량 데이터만 즉시 전송
     function syncTasksImmediately(dateStr) {
         if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") return;
         const currentData = db[dateStr];
@@ -577,12 +641,14 @@
             mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
+                action: 'syncTasks',
                 date: dateStr,
                 workout: Boolean(currentData.workout),
                 pill: Boolean(currentData.pill),
                 water: Boolean(currentData.water),
                 alcohol: Boolean(currentData.alcohol),
-                memo: currentData.memo || ""
+                memo: currentData.memo || "",
+                lastModified: currentData._lastModified || Date.now()
             })
         }).catch(e => console.log('Sync Error:', e));
     }
@@ -592,6 +658,7 @@
         const memoValue = document.getElementById('memoInput').value;
         initDB(activeDateStr);
         db[activeDateStr].memo = memoValue;
+        db[activeDateStr]._lastModified = Date.now();
         saveRoutineDB();
         isMonthlyDirty = true;
         if (memoTimer) clearTimeout(memoTimer);
@@ -601,7 +668,7 @@
     }
 
     function restoreFromGoogleSheet() {
-        if (!confirm("구글 시트에 저장된 데이터를 가져와 현재 폰의 데이터를 덮어씌울까요?")) return;
+        if (!confirm("구글 시트에 저장된 데이터를 가져와 현재 폰의 데이터를 복원할까요?")) return;
 
         const btn = document.getElementById('btnRestore');
         btn.innerText = "복원 중...";
@@ -645,7 +712,7 @@
         if (!files.length) return;
 
         initDB(activeDateStr);
-        let photos = db[activeDateStr].workoutPhotos || [];
+        let photos = await idbGetPhotos(activeDateStr);
 
         if (photos.length + files.length > 5) {
             alert(`운동 인증 사진은 최대 5장까지 등록할 수 있습니다. (현재 ${photos.length}장 등록됨)`);
@@ -657,8 +724,13 @@
             for (const file of files) {
                 const base64 = await compressWorkoutImage(file);
                 photos.push(base64);
+                
+                // 구글 드라이브 백엔드 업로드 트리거 (비동기)
+                uploadPhotoToCloud(activeDateStr, base64);
             }
-            db[activeDateStr].workoutPhotos = photos;
+            await idbSavePhotos(activeDateStr, photos);
+            db[activeDateStr].photoCount = photos.length;
+            db[activeDateStr]._lastModified = Date.now();
 
             if (!db[activeDateStr].workout) {
                 db[activeDateStr].workout = true;
@@ -677,19 +749,36 @@
         }
     }
 
-    function deleteWorkoutPhotoItem(idx) {
+    function uploadPhotoToCloud(dateStr, base64) {
+        if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") return;
+        fetch(GOOGLE_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                action: 'uploadPhoto',
+                date: dateStr,
+                imageBase64: base64
+            })
+        }).catch(err => console.log('사진 클라우드 업로드 대기:', err));
+    }
+
+    async function deleteWorkoutPhotoItem(idx) {
         if (!confirm('이 인증 사진을 삭제할까요?')) return;
         initDB(activeDateStr);
-        let photos = db[activeDateStr].workoutPhotos || [];
+        let photos = await idbGetPhotos(activeDateStr);
         photos.splice(idx, 1);
-        db[activeDateStr].workoutPhotos = photos;
+        await idbSavePhotos(activeDateStr, photos);
+
+        db[activeDateStr].photoCount = photos.length;
+        db[activeDateStr]._lastModified = Date.now();
         saveRoutineDB();
         renderWorkoutPhoto();
         renderWeekView();
         syncTasksImmediately(activeDateStr);
     }
 
-    function renderWorkoutPhoto() {
+    async function renderWorkoutPhoto() {
         const dateEl = document.getElementById('photoCardDate');
         if (dateEl) {
             const parts = activeDateStr.split('-');
@@ -698,8 +787,7 @@
         const container = document.getElementById('workoutPhotoContainer');
         if (!container) return;
 
-        initDB(activeDateStr);
-        const photos = db[activeDateStr].workoutPhotos || [];
+        const photos = await idbGetPhotos(activeDateStr);
 
         if (photos.length > 0) {
             let cardsHtml = '';
@@ -753,11 +841,12 @@
         document.getElementById('routineLightboxContent').innerHTML = '';
     }
 
-    function init() {
+    async function init() {
+        await migrateLegacyPhotos();
         renderHeader();
         renderMainButtons();
         renderWeekView();
-        renderWorkoutPhoto();
+        await renderWorkoutPhoto();
         renderMemo();
         checkRewardMilestone();
         setupPullToRefresh();
@@ -798,10 +887,10 @@
         renderMemo();
     }
 
-    // ⚡ [버튼 클릭 즉시 전송] 딜레이 제로 & 클라우드 직통 저장
     function toggleTask(task) {
         initDB(activeDateStr);
         db[activeDateStr][task] = !db[activeDateStr][task];
+        db[activeDateStr]._lastModified = Date.now();
         saveRoutineDB();
         
         document.getElementById(`btn-${task}`).classList.toggle('active', db[activeDateStr][task]);
@@ -813,7 +902,6 @@
             checkRewardMilestone();
         }
 
-        // 지연 시간 없이 0.01초 만에 구글 시트로 즉시 전송
         syncTasksImmediately(activeDateStr);
     }
 
@@ -861,7 +949,7 @@
             let isSunday = tDate.getDay() === 0;
             
             initDB(dStr);
-            let pCount = (db[dStr].workoutPhotos && db[dStr].workoutPhotos.length) || 0;
+            let pCount = db[dStr].photoCount || 0;
             let photoBadge = pCount > 0 
                 ? `<span style="font-size:10px; margin-top:1px; line-height:14px;">⌚${pCount > 1 ? pCount : ''}</span>` 
                 : `<span style="height:15px;"></span>`;
