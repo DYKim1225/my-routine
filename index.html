@@ -72,7 +72,6 @@
             margin-bottom: 10px;
         }
 
-        /* 1번 개선: 주간 내비게이션 바 & 눈에 띄는 오늘 복귀 버튼 */
         .week-nav { display: flex; justify-content: center; align-items: center; gap: 10px; }
         .week-nav-btn { background: var(--gray-btn); border: none; font-size: 13px; color: var(--text-main); border-radius: 12px; padding: 7px 12px; cursor: pointer; font-weight: 600; }
         .week-nav-text { font-size: 14px; color: var(--text-sub); font-weight: 600; min-width: 75px; text-align: center; }
@@ -192,7 +191,7 @@
         }
         .photo-empty-placeholder:active { background-color: var(--gray-btn); }
 
-        /* 월간 달력 스타일 & 선택 상태 */
+        /* 월간 달력 */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; padding: 0 4px; }
         .calendar-nav-btn { background: none; border: none; font-size: 18px; color: var(--primary-color); cursor: pointer; padding: 4px 12px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
@@ -203,12 +202,53 @@
         .cal-date { font-size: 12px; font-weight: 600; }
         .cal-cell.today .cal-date { background-color: var(--primary-color); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         
-        /* 4번 신규: 월간 상세 인스펙터 카드 스타일 */
-        .monthly-detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px; }
-        .monthly-detail-badge-group { display: flex; gap: 6px; }
-        .monthly-detail-badge { font-size: 12px; padding: 3px 8px; border-radius: 8px; background: var(--gray-light); font-weight: 600; color: var(--text-sub); }
-        .monthly-detail-badge.done { background: rgba(52, 199, 89, 0.15); color: var(--primary-color); }
-        .monthly-memo-box { background: var(--gray-light); border-radius: 12px; padding: 12px; font-size: 13px; color: var(--text-main); line-height: 1.4; margin-bottom: 14px; }
+        /* 미니멀 월간 상세 인스펙터 카드 스타일 */
+        .monthly-detail-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px; 
+            padding: 0 6px; 
+        }
+        .monthly-date-text {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+        .monthly-detail-badge-group { 
+            display: flex; 
+            gap: 8px; 
+            align-items: center; 
+        }
+        .monthly-detail-badge { 
+            width: 34px; 
+            height: 34px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 10px; 
+            font-size: 17px; 
+            background: var(--gray-light); 
+            transition: all 0.2s ease;
+        }
+        .monthly-detail-badge.done { 
+            background: rgba(52, 199, 89, 0.15); 
+            box-shadow: 0 2px 6px rgba(52, 199, 89, 0.2);
+        }
+        .monthly-detail-badge.inactive { 
+            opacity: 0.25; 
+            filter: grayscale(100%); 
+        }
+        .monthly-memo-box { 
+            background: var(--gray-light); 
+            border-radius: 12px; 
+            padding: 12px 14px; 
+            font-size: 13px; 
+            color: var(--text-main); 
+            line-height: 1.4; 
+            margin-bottom: 12px; 
+        }
 
         .stat-row { margin-bottom: 14px; }
         .stat-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: 500; }
@@ -279,12 +319,10 @@
             <button class="week-nav-btn" onclick="changeWeek(-1)">◀ 이전</button>
             <span id="weekDisplay" class="week-nav-text"></span>
             <button class="week-nav-btn" onclick="changeWeek(1)">다음 ▶</button>
-            <!-- 1번 개선: 원클릭 오늘 복귀 버튼 -->
             <button id="btnReturnToday" class="today-pill-btn" onclick="returnToToday()">🎯 오늘</button>
         </div>
     </div>
 
-    <!-- 2번 개선: 주간 탭 좌우 스와이프 제스처 컨테이너 -->
     <div id="tab-weekly" class="tab-content active">
         <div class="section-card">
             <h2 class="section-title">목표 달성 기록</h2>
@@ -330,13 +368,13 @@
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
 
-        <!-- 4번 신규: 달력과 통계 데이터 사이 날짜별 상세 인스펙터 카드 -->
+        <!-- 미니멀 상세 인스펙터 카드 (글자 최소화 & 이모지 아이콘 칩) -->
         <div class="section-card" id="monthlyInspectorCard">
             <div class="monthly-detail-header">
-                <h2 class="section-title" style="margin-bottom:0; padding:0;" id="inspectorDateTitle">선택일 기록</h2>
+                <span class="monthly-date-text" id="inspectorDateTitle"></span>
                 <div class="monthly-detail-badge-group" id="inspectorBadgeGroup"></div>
             </div>
-            <div id="inspectorMemoContainer" class="monthly-memo-box">기록된 메모가 없습니다.</div>
+            <div id="inspectorMemoContainer" class="monthly-memo-box">기록된 한 줄 메모가 없습니다.</div>
             <div id="inspectorPhotoContainer"></div>
         </div>
 
@@ -384,7 +422,7 @@
     let viewYear = systemToday.getFullYear();
     let viewMonth = systemToday.getMonth();
     let isMonthlyDirty = true; 
-    let selectedMonthlyDateStr = todayStr; // 4번: 월간 뷰에서 선택된 날짜
+    let selectedMonthlyDateStr = todayStr;
 
     const tasks = ['workout', 'pill', 'water', 'alcohol'];
     const taskEmojis = { workout: '💪', pill: '💊', water: '💧', alcohol: '🍷' };
@@ -402,9 +440,6 @@
 
     let db = JSON.parse(localStorage.getItem('routineDB')) || {};
 
-    /* ==========================================================================
-       IndexedDB 사진 전용 스토리지 매니저
-       ========================================================================== */
     const IDB_NAME = 'MyRoutinePhotoDB';
     const IDB_STORE = 'photos';
 
@@ -550,9 +585,6 @@
         document.getElementById('rewardModal').classList.remove('active');
     }
 
-    /* ==========================================================================
-       2번 개선: 풀투리프레시 + 좌우 주간 스와이프 충돌 방지 통합 제스처 엔진
-       ========================================================================== */
     function setupTouchGestures() {
         const ind = document.getElementById('pullIndicator');
         const txt = document.getElementById('pullText');
@@ -568,7 +600,6 @@
             startX = touch.clientX;
             startY = touch.clientY;
 
-            // 사진 갤러리 내부 스크롤 중일 때는 주간 스와이프 무시
             if (e.target.closest('.photo-gallery-scroll')) {
                 isHorizSwipeCandidate = false;
             } else {
@@ -604,7 +635,6 @@
             const diffX = touch.clientX - startX;
             const diffY = touch.clientY - startY;
 
-            // 1. 당겨서 새로고침 처리
             if (isPulling) {
                 isPulling = false;
                 if (ind.classList.contains('ready')) {
@@ -625,18 +655,14 @@
                 }
             }
 
-            // 2. 좌우 스와이프 주간 이동 처리 (주간 탭 활성화 시에만 동작)
             if (isHorizSwipeCandidate && weeklyTab.classList.contains('active')) {
                 const absX = Math.abs(diffX);
                 const absY = Math.abs(diffY);
 
-                // 수평 이동이 60px 이상이고 수직 이동의 1.5배 이상일 때만 확실한 제스처로 인정
                 if (absX > 60 && absX > absY * 1.5) {
                     if (diffX < 0) {
-                        // 오른쪽에서 왼쪽으로 밀기: 다음 주 ▶
                         changeWeek(1);
                     } else {
-                        // 왼쪽에서 오른쪽으로 밀기: 이전 주 ◀
                         changeWeek(-1);
                     }
                 }
@@ -935,29 +961,21 @@
         renderMemo();
     }
 
-    /* ==========================================================================
-       3번 개선: 다른 주에서 이번 주로 복귀 시 '오늘' 요일 자동 선택
-       ========================================================================== */
     function changeWeek(offset) {
-        // 이동할 날짜 임시 계산
         let nextDate = new Date(activeDate);
         nextDate.setDate(nextDate.getDate() + (offset * 7));
 
-        // 이번 주(시스템 오늘이 속한 주)의 일요일 시작일
         let currentWeekStart = new Date(systemToday);
         currentWeekStart.setDate(systemToday.getDate() - systemToday.getDay());
         let currentWeekStartStr = getLocalIsoDate(currentWeekStart);
 
-        // 이동 대상 주의 일요일 시작일
         let targetWeekStart = new Date(nextDate);
         targetWeekStart.setDate(nextDate.getDate() - nextDate.getDay());
         let targetWeekStartStr = getLocalIsoDate(targetWeekStart);
 
         if (targetWeekStartStr === currentWeekStartStr) {
-            // 이번 주로 넘어온 경우: 요일을 유지하지 않고 '오늘(Today)'로 복귀
             activeDate = new Date(systemToday);
         } else {
-            // 다른 주간 간 이동인 경우: 기존 요일 유지
             activeDate = nextDate;
         }
 
@@ -970,7 +988,6 @@
         renderMemo();
     }
 
-    /* 1번 개선: 명시적 오늘 복귀 */
     function returnToToday() {
         activeDate = new Date(systemToday);
         activeDateStr = getLocalIsoDate(activeDate);
@@ -1009,7 +1026,6 @@
         const weekNum = Math.ceil((activeDate.getDate() + firstDayOfMonth.getDay()) / 7);
         document.getElementById('weekDisplay').innerText = `${activeDate.getMonth() + 1}월 ${weekNum}주차`;
         
-        // 1번 개선: 오늘이 아닐 때만 오늘 복귀 버튼 강조 활성화
         const btnToday = document.getElementById('btnReturnToday');
         if (btnToday) {
             btnToday.style.opacity = isToday ? '0.35' : '1';
@@ -1084,9 +1100,6 @@
         isMonthlyDirty = false;
     }
 
-    /* ==========================================================================
-       4번 개선: 월간 달력 날짜 탭 & 상세 인스펙터 렌더러
-       ========================================================================== */
     function renderCalendar() {
         document.getElementById('currentMonthDisplay').innerText = `${viewYear}년 ${viewMonth + 1}월`;
         const grid = document.getElementById('calendarGrid');
@@ -1124,21 +1137,22 @@
         renderMonthlyInspector();
     }
 
+    /* 4번 개선: 미니멀 날짜 표기(9/27) & 텍스트 제거된 이모지 칩 렌더링 */
     async function renderMonthlyInspector() {
         const parts = selectedMonthlyDateStr.split('-');
         const titleEl = document.getElementById('inspectorDateTitle');
-        const isToday = selectedMonthlyDateStr === todayStr;
-        titleEl.innerHTML = `📅 ${parseInt(parts[1])}월 ${parseInt(parts[2])}일 기록 ${isToday ? '<span style="color:var(--primary-color); font-size:12px;">(오늘)</span>' : ''}`;
+        // '9월 27일 기록 (오늘)' 대신 깔끔하게 '9/27' 로 표기
+        titleEl.innerText = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
 
         initDB(selectedMonthlyDateStr);
         const data = db[selectedMonthlyDateStr];
 
-        // 4대 루틴 뱃지 렌더링
+        // 4대 루틴 텍스트 제거 ➔ 이모티콘 단독 칩
         const badgeGroup = document.getElementById('inspectorBadgeGroup');
         let badgesHtml = '';
         tasks.forEach(task => {
             const done = data && data[task];
-            badgesHtml += `<span class="monthly-detail-badge ${done ? 'done' : ''}">${taskEmojis[task]} ${taskNames[task]}</span>`;
+            badgesHtml += `<span class="monthly-detail-badge ${done ? 'done' : 'inactive'}">${taskEmojis[task]}</span>`;
         });
         badgeGroup.innerHTML = badgesHtml;
 
@@ -1152,7 +1166,7 @@
             memoEl.style.color = 'var(--text-sub)';
         }
 
-        // 인증 사진 렌더링 (IndexedDB 조회)
+        // 인증 사진 렌더링
         const photoContainer = document.getElementById('inspectorPhotoContainer');
         const photos = await idbGetPhotos(selectedMonthlyDateStr);
 
