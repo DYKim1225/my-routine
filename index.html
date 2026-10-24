@@ -191,7 +191,6 @@
         }
         .photo-empty-placeholder:active { background-color: var(--gray-btn); }
 
-        /* 월간 달력 */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; padding: 0 4px; }
         .calendar-nav-btn { background: none; border: none; font-size: 18px; color: var(--primary-color); cursor: pointer; padding: 4px 12px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
@@ -202,7 +201,6 @@
         .cal-date { font-size: 12px; font-weight: 600; }
         .cal-cell.today .cal-date { background-color: var(--primary-color); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         
-        /* 미니멀 월간 상세 인스펙터 카드 스타일 */
         .monthly-detail-header { 
             display: flex; 
             justify-content: space-between; 
@@ -368,7 +366,6 @@
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
 
-        <!-- 미니멀 상세 인스펙터 카드 (글자 최소화 & 이모지 아이콘 칩) -->
         <div class="section-card" id="monthlyInspectorCard">
             <div class="monthly-detail-header">
                 <span class="monthly-date-text" id="inspectorDateTitle"></span>
@@ -678,6 +675,7 @@
         }
     }
 
+    /* 타임스탬프 비교 기반 스마트 클라우드 동기화 */
     function syncFromCloud(callback) {
         if (!GOOGLE_APP_URL || GOOGLE_APP_URL.trim() === "") {
             if (callback) callback();
@@ -692,17 +690,23 @@
                     const row = data[dateKey];
                     initDB(dateKey);
 
-                    if (db[dateKey]._lastModified && (now - db[dateKey]._lastModified < 15000)) {
-                        continue;
+                    const cloudTime = Number(row.lastModified) || 0;
+                    const localTime = Number(db[dateKey]._lastModified) || 0;
+
+                    // 로컬에서 15초 이내에 수정되었거나 로컬의 수정 시간이 클라우드보다 더 최신이면 시트 데이터로 덮어쓰지 않음
+                    const isRecentlyEdited = localTime && (now - localTime < 15000);
+                    const isLocalNewer = localTime >= cloudTime;
+
+                    if (!isRecentlyEdited && !isLocalNewer) {
+                        db[dateKey].workout = Boolean(row.workout);
+                        db[dateKey].pill = Boolean(row.pill);
+                        db[dateKey].water = Boolean(row.water);
+                        db[dateKey].alcohol = Boolean(row.alcohol);
+                        if (row.memo !== undefined) db[dateKey].memo = row.memo;
+                        db[dateKey]._lastModified = cloudTime;
                     }
 
-                    db[dateKey].workout = Boolean(row.workout);
-                    db[dateKey].pill = Boolean(row.pill);
-                    db[dateKey].water = Boolean(row.water);
-                    db[dateKey].alcohol = Boolean(row.alcohol);
-                    if (row.memo !== undefined) db[dateKey].memo = row.memo;
-                    db[dateKey]._lastModified = row.lastModified || 0;
-
+                    // 사진은 유실 방지를 위해 상시 누적 병합
                     if (row.workoutPhotos && row.workoutPhotos.length > 0) {
                         const localPhotos = await idbGetPhotos(dateKey);
                         const mergedPhotos = Array.from(new Set([...localPhotos, ...row.workoutPhotos]));
@@ -999,6 +1003,8 @@
         renderMemo();
     }
 
+    /* 0.5초 디바운스를 적용한 루틴 토글 (연타 시 1개 요청으로 통합) */
+    let routineSyncTimer = null;
     function toggleTask(task) {
         initDB(activeDateStr);
         db[activeDateStr][task] = !db[activeDateStr][task];
@@ -1014,7 +1020,11 @@
             checkRewardMilestone();
         }
 
-        syncTasksImmediately(activeDateStr);
+        // 연속 터치 시 이전 예약 타이머를 취소하고 마지막 터치 후 0.5초 뒤 1회만 전송
+        if (routineSyncTimer) clearTimeout(routineSyncTimer);
+        routineSyncTimer = setTimeout(() => {
+            syncTasksImmediately(activeDateStr);
+        }, 500);
     }
 
     function renderHeader() {
@@ -1137,17 +1147,14 @@
         renderMonthlyInspector();
     }
 
-    /* 4번 개선: 미니멀 날짜 표기(9/27) & 텍스트 제거된 이모지 칩 렌더링 */
     async function renderMonthlyInspector() {
         const parts = selectedMonthlyDateStr.split('-');
         const titleEl = document.getElementById('inspectorDateTitle');
-        // '9월 27일 기록 (오늘)' 대신 깔끔하게 '9/27' 로 표기
         titleEl.innerText = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
 
         initDB(selectedMonthlyDateStr);
         const data = db[selectedMonthlyDateStr];
 
-        // 4대 루틴 텍스트 제거 ➔ 이모티콘 단독 칩
         const badgeGroup = document.getElementById('inspectorBadgeGroup');
         let badgesHtml = '';
         tasks.forEach(task => {
@@ -1156,7 +1163,6 @@
         });
         badgeGroup.innerHTML = badgesHtml;
 
-        // 메모 렌더링
         const memoEl = document.getElementById('inspectorMemoContainer');
         if (data && data.memo && data.memo.trim() !== '') {
             memoEl.innerText = data.memo;
@@ -1166,7 +1172,6 @@
             memoEl.style.color = 'var(--text-sub)';
         }
 
-        // 인증 사진 렌더링
         const photoContainer = document.getElementById('inspectorPhotoContainer');
         const photos = await idbGetPhotos(selectedMonthlyDateStr);
 
